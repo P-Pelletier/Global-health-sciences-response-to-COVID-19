@@ -1,4 +1,4 @@
-,month,n_country=1,n_country>1,n_country=1_corona,n_country>1_corona
+country,month,solePubs,collabPubs,solePubsCorona,collabPubsCorona
 Portugal,201901,243.0,252.0,0.0,1.0
 Australia,201901,1026.0,1108.0,1.0,2.0
 France,201901,834.0,1379.0,2.0,1.0
