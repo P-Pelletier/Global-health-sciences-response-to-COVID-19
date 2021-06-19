@@ -27,14 +27,19 @@ datac = read.csv(file="Data/Data_2020/fig1c.csv",
 
 months = unique(dataa$month)
 
+# xlabel
 sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[16]), 
                         labels = c("Jan 2019","July 2019", "Jan 2020","April 2020" )) 
 
+# margin size
 oma2 <- c(0.3,0,0,0)
+
+#figa
 
 figa = ggplot(dataa, aes(month)) + 
   geom_line(size=1.25,aes(y = Coronavirus, colour = "Coronavirus",group = 1)) + 
   geom_line(size=1.25,aes(y = non_Coronavirus, colour = "non_Coronavirus",group = 1))+
+  # covid19 treshold
   geom_vline(xintercept = 12,linetype="dashed") +
   scale_color_manual(values=c('#ff7f0e','#1f77b4'))+
   labs(title=element_blank(), y="Number of papers", x=element_blank()) +
@@ -56,9 +61,12 @@ figa = ggplot(dataa, aes(month)) +
   sxd
 
 figa
+#save for future powerpoint
 ggsave("Results/Results_2020/fig1a.png", plot = figa)
+
 # plot 2 ####
 
+# Todo log scale starts at 1 need to start at 0
 colnames(datab) <- c("pre Covid-19","Covid-19","country")
 datab$country = countrycode(datab$country, origin ='country.name', destination ='iso3c')
 datab <- melt(datab, id = "country")
@@ -90,6 +98,7 @@ ggsave("Results/Results_2020/fig1b.png", plot = figb)
 
 # plot 3 ####
 
+#Todo geom ribbon not appearing in legend
 months = unique(datac$month)
 
 sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[16]), 
