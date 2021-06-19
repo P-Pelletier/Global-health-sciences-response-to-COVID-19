@@ -117,7 +117,7 @@ class Create_net:
         
         for paper in tqdm.tqdm(data):
             date = self.get_unix(paper)
-            if int(date) < self.last_date:
+            if int(date) <= self.last_date:
                 if date not in time_period:
                     time_period.append(date)
                 try:
@@ -165,12 +165,12 @@ class Create_net:
 
         df_add = pd.DataFrame(np.zeros((len(self.city_country_list), 2)))
         df_add.index = self.city_country_list
-        df_add.columns = ["n_country=1","n_country>1"]
+        df_add.columns = ["solePubs","collabPubs"]
         self.n_publication_add = {key: df_add.copy() for key in self.time_period}        
 
         for paper in tqdm.tqdm(self.data):
             date = self.get_unix(paper)
-            if int(date) < self.last_date:
+            if int(date) <= self.last_date:
                 # get list of country for each author 
                 temp_list_country = []
                 if self.scale == "city":
@@ -196,9 +196,9 @@ class Create_net:
 
                 for loc in set(temp_list_country):
                     if len(set(temp_list_country))>1:
-                        self.n_publication_add[date].at[loc, "n_country>1"] += 1  
+                        self.n_publication_add[date].at[loc, "collabPubs"] += 1  
                     else:
-                        self.n_publication_add[date].at[loc, "n_country=1"] += 1 
+                        self.n_publication_add[date].at[loc, "solePubs"] += 1 
         
                 
 

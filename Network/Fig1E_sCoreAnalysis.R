@@ -14,13 +14,13 @@ library(RColorBrewer)
 library(lattice)
 library(tikzDevice)
 
-setwd('C:/Users/Beta/Documents/GitHub/Global-health-sciences-response-to-COVID-19')
+setwd('D:/GitHub/Global-health-sciences-response-to-COVID-19')
 # load functions #
 source("Network/aux_fcts.R")
 source("Network/netw_fcts.R")
 
 # read data
-sample <- read_data(path = 'Data')
+sample <- read_data(path = 'Data/Data_2020')
 
 table(sample$nodeActivity$month)
 
@@ -50,7 +50,7 @@ for(covid in c(TRUE,FALSE)){
 }
 
 # order countries by (s-core, strength)
-g <- get_acc_network(sample=sample, covid=covid, start=201901, end=202004, 
+g <- get_acc_network(sample=sample, covid=covid, start=201901, end=202012, 
                      soleAuthored=TRUE) # soleAuthored irrelevant here
 orderidx <- order(rowSums(sCore), strength(g,V(g)), decreasing=TRUE)
 sCore <- sCore[orderidx,]
@@ -58,9 +58,6 @@ sCoreCovid <- sCoreCovid[orderidx,]
 
 
 ######## plot s-cores ########
-library(ggplot2)
-library(cowplot)
-library(gridExtra)
 
 
 # top M countries
@@ -159,11 +156,11 @@ diffPlot <- ggplot(sCoreDiff_df, aes(month, country)) +
 
 
 # plot into tikz
-filename <- "Results/sCore_202007.tex"
+options("tikzLatex"='D:/MiKTeX/miktex/bin/x64/pdflatex.exe')
+filename <- "Results/sCore_202105.tex"
 tikz(file=filename, width=5, height=3.5, engine="pdftex")
-
 #grid.arrange(otherPlot, coronaPlot, diffPlot, legend, widths = c(3, 2, 2.5), nrow = 1)
-grid.arrange(otherPlot, coronaPlot, diffPlot, widths = c(3, 2.2, 3), nrow = 1)
+fige = grid.arrange(otherPlot, coronaPlot, diffPlot, widths = c(3, 2.2, 3), nrow = 1)
 
 dev.off()
 

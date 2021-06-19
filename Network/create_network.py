@@ -1,7 +1,7 @@
 import tqdm
 import pandas as pd
 import pymongo
-from utils import Create_net
+from Network.utils import Create_net
 from datetime import datetime
 import pycountry
 
@@ -17,7 +17,8 @@ mydb = client["pubmed"]
 collection = mydb["pubmed_2019_cleaned"]
 
 start_covid = datetime(2020,1,1)
-last_date = datetime(2020,8,1)
+last_date = datetime(2021,5,31)
+last_date_year = last_date.year
 
 n_month_after_covid = (last_date.year - start_covid.year) * 12 + (last_date.month - start_covid.month) + (last_date.day - start_covid.day)/30
 if len(str(last_date.month)) == 1:
@@ -63,7 +64,7 @@ for month in tqdm.tqdm(time_period):
     inp.insert(0, 'month', month)
     edge_list = pd.concat([edge_list,inp])
 
-edge_list.to_csv("../Data/edge_list.csv")
+edge_list.to_csv("Data/Data_{}/edge_list.csv".format(str(last_date_year)))
 
 
 

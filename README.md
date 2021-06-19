@@ -4,14 +4,20 @@ This folder hosts the code, data and results for the paper "Global health scienc
 
 ## Data
 
-pubmed_data.rar contains the cleaned data used for the analysis. You need to insert the json file in a MongoDB to run the scripts. The DB name used is "pubmed" and the collection name "cleaned". The session is currently set to localhost on port 27017. Please change parameters if needed.
+pubmed__2019_cleaned.rar contains the cleaned data used for the analysis. You need to insert the json file in a MongoDB to run the scripts. The DB name used is "pubmed" and the collection name "pubmed_2019_cleaned". The session is currently set to localhost on port 27017. Please change parameters if needed.
 
-The json contains the strict minimum to run our analysis, but the Pubmed API gives you more information. If you wish to download the data, you can use the script in the folder "Downloads". First run "pubmed_api.py" followed by "Clean_db.py". 
+The json contains the strict minimum to run our analysis, but the Pubmed API gives you more information. If you wish to download the data, you can use the script in the folder "Downloads". First run "Downloads/pubmed_api.py" followed by "Downloads/Clean_db.py".  
+Pubmed_api.py will download every paper starting at the PMID 30M. If you want to download the whole database change line 127 to "inf_dl(collection,start_at = None)". 
+Clean_db.py will currently clean the 5M papers change the line 12 if you did not start at 30M.
 
 ## Run the analysis
 
-First run: Stats/get_stats.py and Network/create_network.py
-This will give you the files "country_pub_info.csv" and "edge_list.csv" in the folder Data, as well as the tex file used for Fig1 A-C
 
-Second run: Stats/3d plot/netwadaptation.r 
+
+Second run: Stats/netwadaptation.r 
 This produce the Fig1 D using "country_pub_info.csv" and "edge_list.csv" to compute the kernel regression.
+
+Third run: Stats/Fig1.R
+This will give the Fig1 of the paper
+
+You can finish by running Stats/Tab1_RegressionCoronaPapers.R and Network/Fig2_networks.R
