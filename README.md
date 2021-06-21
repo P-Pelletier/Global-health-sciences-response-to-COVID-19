@@ -12,7 +12,7 @@ Clean_db.py will currently clean the 5M papers change the line 12 if you did not
 
 ## Run the analysis
 
-
+First run: Stats/get_stats.py and create_network.py which will give the data for the rest of the scripts.
 
 Second run: Stats/netwadaptation.r 
 This produce the Fig1 D using "country_pub_info.csv" and "edge_list.csv" to compute the kernel regression.
