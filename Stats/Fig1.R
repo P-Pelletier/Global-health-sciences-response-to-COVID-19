@@ -28,8 +28,8 @@ datac = read.csv(file="Data/Data_2020/fig1c.csv",
 months = unique(dataa$month)
 
 # xlabel
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[16]), 
-                        labels = c("Jan 2019","July 2019", "Jan 2020","April 2020" )) 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[24]),##,months[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Dec 2020"))##, "May 2021" )) 
 
 # margin size
 oma2 <- c(0.3,0,0,0)
@@ -91,7 +91,7 @@ figb = ggplot(datab) +
         legend.position="top",
         legend.text=element_text(size = 6)) +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x)))+
+                labels = trans_format("log10", math_format(10^.x)))
 
 figb
 ggsave("Results/Results_2020/fig1b.png", plot = figb)
@@ -101,8 +101,8 @@ ggsave("Results/Results_2020/fig1b.png", plot = figb)
 #Todo geom ribbon not appearing in legend
 months = unique(datac$month)
 
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[16]), 
-                        labels = c("Jan 2019","July 2019", "Jan 2020","April 2020" )) 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[24]),##,months[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Dec 2020"))##, "May 2021" )) 
 
 figc = ggplot(datac) + 
   geom_ribbon(aes(x=month,ymin=LCI, ymax=UCI,fill="Tau", group = 1), 
@@ -152,7 +152,7 @@ table(sample$nodeActivity$month)
 
 ########## calculate s-cores ###########
 months <- sort(unique(sample$nodeActivity$month))
-months <- c(201901:201912,202001:202012)
+months <- c(201901:201912,202001:202012)#,202101:202105)
 sCore <- matrix(NA, nrow=nrow(sample$nodelist), ncol=length(months))
 rownames(sCore) <- sample$nodelist$countryCode
 colnames(sCore) <- as.character(months)
@@ -215,8 +215,8 @@ redBlueCols <- rev(RColorBrewer::brewer.pal(9,"RdBu"))
 redCols <- redBlueCols[5:9]
 
 # common x labels
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[16]), 
-                        labels = c("Jan 2019","July 2019", "Jan 2020","April 2020" )) 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[24]),##,months[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Dec 2020"))##, "May 2021" )) 
 
 # margins
 oma1 <- c(0.5,0,0.5,0)
@@ -284,23 +284,23 @@ diffPlot <- ggplot(sCoreDiff_df, aes(month, country)) +
 
 #grid.arrange(otherPlot, coronaPlot, diffPlot, legend, widths = c(3, 2, 2.5), nrow = 1)
 fige = grid.arrange(otherPlot, coronaPlot, diffPlot, widths = c(3, 2.2, 3), nrow = 1)
-ggsave("Results/Results_2020/fig1e.png", plot = fige)
+ggsave("Results/Results_2021/fig1e.png", plot = fige)
 
 # avengers assemble
   
-img = "Results/Results_2020/Fig1d.png"
+img = "Results/Results_2021/Fig1d.png"
 
 fig1 = ggdraw() +
-  draw_plot(figa, x=0, y=1.75/3, width=1/3, height=1.4/3)+
-  draw_plot(figb, x=1/3, y=1.75/3, width=1/3, height=1.4/3)+
-  draw_plot(figc, x=2/3, y=1.75/3, width=1/3, height=1.4/3)+
-  draw_image(img, x=0, y=0, width=1.25/3, height=1.7/3)+
+  draw_plot(figa, x=0, y=1.75/3, width=0.85/3, height=1.4/3)+
+  draw_plot(figb, x=1/3, y=1.75/3, width=0.85/3, height=1.4/3)+
+  draw_plot(figc, x=2/3, y=1.75/3, width=0.85/3, height=1.4/3)+
+  draw_image(img, x=0, y=0, width=1.20/3, height=1.7/3)+
   draw_plot(fige, x=1.25/3, y=0, width=1.75/3, height=1.7/3)+
   draw_plot_label(label=c("A","B", "C", "D","E"),x=c(0, 1/3, 2/3, 0, 0.45),y=c(0.99, 0.99, 0.99, 0.55,0.55), 
                   size = 10)
 
 
-filename <- "Results/Results_2020/Fig1.pdf"
+filename <- "Results/Results_2021/Fig1.pdf"
 pdf(file=filename, width=8, height=5, family="Helvetica", pointsize=6)
 fig1
 dev.off()
