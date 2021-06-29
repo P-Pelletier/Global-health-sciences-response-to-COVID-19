@@ -117,7 +117,7 @@ class Create_net:
         
         for paper in tqdm.tqdm(data):
             date = self.get_unix(paper)
-            if int(date) < self.last_date:
+            if int(date) <= self.last_date:
                 if date not in time_period:
                     time_period.append(date)
                 try:
@@ -177,7 +177,7 @@ class Create_net:
         self.init_network()
         for paper in tqdm.tqdm(self.data):
             date = self.get_unix(paper)
-            if int(date) < self.last_date:
+            if int(date) <= self.last_date:
                 # get list of country for each author 
                 temp_list_country = []
                 if self.scale == "city":

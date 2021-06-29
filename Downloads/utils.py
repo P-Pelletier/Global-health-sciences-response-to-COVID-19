@@ -404,6 +404,7 @@ class Clean_infos:
                 try:
                     query, newvalues = self.set_new_values(paper)
                     if  paper['doi'] is not None: 
+                        """
                         try:
                             infs = self.works.doi(paper['doi'])
                             infs = {str(key):infs[key] for key in ['is-referenced-by-count',
@@ -411,19 +412,19 @@ class Clean_infos:
                                                                    'created',
                                                                    'author']}
                             newvalues.update(infs)
-                            paper.update(newvalues)
                             to_change, paper = self.is_to_update(paper)
                             if to_change:
                                 query, newvalues2 = self.set_new_values(paper)
                                 paper.update(newvalues2)
                         except:
                             print('No crossref info')
-                        
+                        """
+                        paper.update(newvalues)
                         paper.update(self.get_loc_list(paper))
                         self.collection_clean.insert_one(paper)
                         
                 except Exception as e:
-                    print(str(e))
+                    print("427",str(e))
         
             
 

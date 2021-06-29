@@ -16,7 +16,7 @@ rm(list = ls()) ; gc();gc();gc();gc();gc(); ls(); search()
 library(igraph)
 library(plot.matrix)
 library(np)
-setwd('C:/Users/Beta/Documents/GitHub/Global-health-sciences-response-to-COVID-19')
+setwd('D:/GitHub/Global-health-sciences-response-to-COVID-19')
 
 # load functions #
 source("Network/aux_fcts.R")
@@ -24,7 +24,7 @@ source("Network/netw_fcts.R")
 #source("Network/lowrankAdjacency/opt_fcts.R")
 
 # read data
-sample <- read_data()
+sample <- read_data(path="Data/Data_2021")
 
 ############# get networks ##########
 # get four networks
@@ -180,25 +180,25 @@ tick_text = as.character(c(1,2,5,TeX('10^1'),'','',TeX('10^2'),'','',TeX('10^3')
 
 plot_ly(x = ~log19_seq,
         y = ~logCovid19_seq,
-        z = ~logCovid20_pred) %>%
+        z = ~logCovid20_21_pred) %>%
   add_surface(opacity = 0.85,colorscale = list(c(0,"#ff7f0e" ),c(1, "#1f77b4"))) %>%
-  layout(scene = list(xaxis = list(title = 'Nb. Non-Coronavirus collab. 2019',
+  layout(scene = list(xaxis = list(title = 'Non-coronavirus collab. 2019',
                                    ticktext = tick_text[1:birk::which.closest(tick_vals,x_max)], 
                                    tickvals = tick_vals[1:birk::which.closest(tick_vals,x_max)],
                                    ticketmode = 'array',
-                                   titlefont = list(color=c('black'),family = 'Helvetica', size = 16)),
+                                   titlefont = list(color=c('black'),family = 'Helvetica', size = 12)),
                       
-                      yaxis = list(title = '  Nb. Coronavirus collab. 2019',
+                      yaxis = list(title = '  Coronavirus collab. 2019',
                                    ticktext = tick_text[1:birk::which.closest(tick_vals,y_max)], 
                                    tickvals = tick_vals[1:birk::which.closest(tick_vals,y_max)],
                                    ticketmode = 'array',
-                                   titlefont = list(color=c('black'),family = 'Helvetica', size = 16)),
+                                   titlefont = list(color=c('black'),family = 'Helvetica', size = 12)),
                       
-                      zaxis = list(title = 'Nb. Coronavirus collab. 2020   ',
+                      zaxis = list(title = 'Coronavirus collab. 2020-21   ',
                                    ticktext = tick_text[1:birk::which.closest(tick_vals,z_max)], 
                                    tickvals = tick_vals[1:birk::which.closest(tick_vals,z_max)],
                                    ticketmode = 'array',
-                                   titlefont = list(color=c('black'),family = 'Helvetica', size = 16)),
+                                   titlefont = list(color=c('black'),family = 'Helvetica', size = 12)),
                       aspectmode='cube')) %>% 
   add_trace(data = el, x = el$log19, y = el$logCovid19, z = el$logCovid20, text = ~ el$collaboration, mode = "markers", type = "scatter3d", 
             marker = list(size = 5, color = "#4d4a4a"),hovertemplate = paste(
@@ -212,11 +212,11 @@ plot_ly(x = ~log19_seq,
 tick_vals = log(c(seq(1,10,1),seq(20,100,10),seq(200,1000,100),seq(2000,10000,1000)))
 tick_text = as.character(c('1',rep('',8),'10',rep('',8),'100',rep('',8),'1k',rep('',8),'10k'))
 
-
+logCovid20_21_pred = logCovid20_pred
 
 plot_ly(x = ~log19_seq,
         y = ~logCovid19_seq,
-        z = ~logCovid20_pred) %>%
+        z = ~logCovid20_21_pred) %>%
   add_surface(opacity = 0.85,colorscale = list(c(0,"#ff7f0e" ),c(1, "#1f77b4"))) %>%
   layout(scene = list(xaxis = list(title = 'Non-coronavirus collab. 2019',
                                    ticktext = tick_text[1:birk::which.closest(tick_vals,x_max)], 
@@ -230,7 +230,7 @@ plot_ly(x = ~log19_seq,
                                    ticketmode = 'array',
                                    titlefont = list(color=c('black'),family = 'Helvetica', size = 15)),
                       
-                      zaxis = list(title = 'Coronavirus collab. 2020    ',
+                      zaxis = list(title = 'Coronavirus collab. 2020-21    ',
                                    ticktext = tick_text[1:birk::which.closest(tick_vals,z_max)], 
                                    tickvals = tick_vals[1:birk::which.closest(tick_vals,z_max)],
                                    ticketmode = 'array',
@@ -242,7 +242,7 @@ plot_ly(x = ~log19_seq,
             )) #, symbol = 104))
 
 
-save.image(file = 'np_reg.RData')
+save.image(file = 'np_reg_2021.RData')
 
 
 
