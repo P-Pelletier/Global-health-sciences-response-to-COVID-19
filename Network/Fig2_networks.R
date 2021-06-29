@@ -32,10 +32,10 @@ source("Network/aux_fcts.R")
 source("Network/netw_fcts.R")
 
 # define paths
-outputPath <- "Results_2020"
+outputPath <- "Results"
 
 # read data
-sample <- read_data(path='Data_2020')
+sample <- read_data(path='Data')
 
 ###### network correlation with QAP over time #######
 
