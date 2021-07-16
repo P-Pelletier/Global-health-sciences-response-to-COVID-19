@@ -7,7 +7,7 @@
 # clear memory #
 rm(list = ls()) ; gc();gc();gc();gc();gc(); ls(); search()
 
-setwd('C:/Users/Beta/Documents/GitHub/Global-health-sciences-response-to-COVID-19')
+setwd('D:/GitHub/Global-health-sciences-response-to-COVID-19')
 # load functions
 source("Network/aux_fcts.R")
 

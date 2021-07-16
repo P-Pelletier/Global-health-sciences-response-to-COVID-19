@@ -21,7 +21,7 @@ mydb = client["pubmed"]
 collection = mydb["pubmed_2019_cleaned"]
 
 start_covid = datetime(2020,1,1)
-last_date = datetime(2021,5,31)
+last_date = datetime(2020,12,31)
 last_date_year = last_date.year
 
 if not os.path.exists("Data/Data_{}".format(str(last_date.year))):
@@ -108,6 +108,25 @@ for month in time_period:
     else:
         pub_data_aggr["others_post"] += pub_data[month]
         pub_data_aggr["corona_post"] += pub_corona[month]
+
+# pareto plot data
+
+pareto = pd.concat([pub_data_aggr["corona_pre"], pub_data_aggr["corona_post"],pub_data_aggr["others_pre"],pub_data_aggr["others_post"]],axis=1)
+pareto.columns = ["corona_pre","corona_post","others_pre","others_post"]
+pareto.to_csv("Data/Data_{}/pareto.csv".format(str(last_date_year)), index=False)
+
+
+share_corona_pre = pareto["corona_pre"]/pareto["corona_pre"].sum()
+share_others_pre = pareto["others_pre"]/pareto["others_pre"].sum()
+share_corona_post = pareto["corona_post"]/pareto["corona_post"].sum()
+share_others_post = pareto["others_post"]/pareto["others_post"].sum()
+pareto_share = pd.DataFrame({"share_corona_pre":share_corona_pre, 
+                             "share_others_pre":share_others_pre,
+                             "share_corona_post":share_corona_post,
+                             "share_others_post":share_others_post})
+pareto_share = pareto_share.fillna(value = 0)
+pareto_share["countries"] = pareto_share.index
+pareto_share.to_csv("Data/Data_{}/pareto_share.csv".format(str(last_date_year)), index=False)
 
 
 #  Country publication ranking by period and type of research
@@ -360,6 +379,7 @@ total_research = pub_data_aggr["corona_pre"]["n_pub"]+ pub_data_aggr["corona_pos
 top = list(total_research.sort_values(ascending=False)[0:10].index)
 df1 = (pub_data_aggr["corona_pre"]["n_pub"].T[top].T)
 df2 = (pub_data_aggr["corona_post"]["n_pub"].T[top].T)
+#df2.sum()/pub_data_aggr["corona_post"]["n_pub"].sum()
 df_barplot = pd.concat([df1,df2],axis=1)
 df_barplot['country'] = df_barplot.index
 df_barplot.to_csv("Data/Data_{}/fig1b.csv".format(str(last_date_year)), index=False)

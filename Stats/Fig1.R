@@ -13,6 +13,7 @@ library(scales)
 library(zoo)
 library(countrycode)
 library(reshape2)
+library(reldist)
 
 setwd("D:/Github/Global-health-sciences-response-to-COVID-19")
 
@@ -22,6 +23,10 @@ datab = read.csv(file="Data/Data_2020/fig1b.csv",
                  header=TRUE,sep=",",stringsAsFactors = FALSE)
 datac = read.csv(file="Data/Data_2020/fig1c.csv",
                  header=TRUE,sep=",",stringsAsFactors = FALSE)
+datapareto_share = read.csv(file="Data/Data_2020/pareto_share.csv",
+                 header=TRUE,sep=",",stringsAsFactors = FALSE)
+datapareto = read.csv(file="Data/Data_2020/pareto.csv",
+                      header=TRUE,sep=",",stringsAsFactors = FALSE)
 
 # plot 1 ####
 
@@ -284,11 +289,53 @@ diffPlot <- ggplot(sCoreDiff_df, aes(month, country)) +
 
 #grid.arrange(otherPlot, coronaPlot, diffPlot, legend, widths = c(3, 2, 2.5), nrow = 1)
 fige = grid.arrange(otherPlot, coronaPlot, diffPlot, widths = c(3, 2.2, 3), nrow = 1)
-ggsave("Results/Results_2021/fig1e.png", plot = fige)
+ggsave("Results/Results_2020/fig1e.png", plot = fige)
+
+# plot 6
+
+datapareto_share$share_corona_pre <- cumsum(sort(datapareto_share$share_corona_pre,decreasing = TRUE))
+datapareto_share$share_corona_post <- cumsum(sort(datapareto_share$share_corona_post,decreasing = TRUE))
+datapareto_share$share_others_pre <- cumsum(sort(datapareto_share$share_others_pre,decreasing = TRUE))
+datapareto_share$share_others_post <- cumsum(sort(datapareto_share$share_others_post,decreasing = TRUE))
+
+
+
+
+figf = ggplot(datapareto_share,aes(x=1:nrow(datapareto_share))) + 
+  geom_line(size=1,aes(y = share_corona_post, colour = "Coronavirus",group = 1)) + 
+  geom_line(size=1,aes(y = share_others_post, colour = "non_Coronavirus",group = 1))+
+  geom_line(size=1,aes(y = (1:nrow(datapareto_share))/nrow(datapareto_share), colour = "Bisector",group = 1)) + 
+  scale_color_manual(values=c('#000000','#ff7f0e','#1f77b4'))+
+  labs(title=element_blank(), y="Number of papers", x=element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 6),
+        axis.title.x = element_text(size = 6),
+        axis.title.y = element_text(size = 6),
+        panel.border = element_rect(colour = "black", fill=NA, size=0.75),
+        plot.margin = unit(oma2, "cm"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        legend.key=element_blank(),
+        legend.title=element_blank(),
+        legend.position="top",
+        legend.text=element_text(size = 6))
+
+figf
+#save for future powerpoint
+ggsave("Results/Results_2020/fig1f_post.png", plot = figf)
+
+# gini figf
+
+gini(datapareto$corona_pre)
+gini(datapareto$corona_post)
+gini(datapareto$others_pre)
+gini(datapareto$others_post)
+
 
 # avengers assemble
   
-img = "Results/Results_2021/Fig1d.png"
+img = "Results/Results_2020/Fig1d.png"
 
 fig1 = ggdraw() +
   draw_plot(figa, x=0, y=1.75/3, width=0.85/3, height=1.4/3)+
@@ -300,7 +347,32 @@ fig1 = ggdraw() +
                   size = 10)
 
 
-filename <- "Results/Results_2021/Fig1.pdf"
+filename <- "Results/Results_2020/Fig1.pdf"
 pdf(file=filename, width=8, height=5, family="Helvetica", pointsize=6)
 fig1
+dev.off()
+
+# Avengers not so assemble 1
+
+fig1 = ggdraw() +
+  draw_plot(figa, x=0.05, y=0.05, width=0.9, height=0.9)
+fig1
+
+filename <- "Results/Results_2020/Fig1.pdf"
+pdf(file=filename, width=8, height=5, family="Helvetica", pointsize=6)
+fig1
+dev.off()
+
+# Avengers not so assemble 2
+
+fig2 = ggdraw() +
+  draw_plot(figc, x=0.01, y=0.1, width=0.45, height=1)+
+  draw_plot(fige, x=1.5/3, y=0, width=0.5, height=1)+
+  draw_plot_label(label=c("A","B"),x=c(0.01, 0.5),y=c(0.58, 5.98), 
+                  size = 10)
+fig2
+
+filename <- "Results/Results_2020/Fig1bis.pdf"
+pdf(file=filename, width=8, height=2.5, family="Helvetica", pointsize=6)
+fig2
 dev.off()
