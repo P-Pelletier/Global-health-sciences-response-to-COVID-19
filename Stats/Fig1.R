@@ -359,7 +359,7 @@ fig1 = ggdraw() +
 fig1
 
 filename <- "Results/Results_2020/Fig1.pdf"
-pdf(file=filename, width=8, height=5, family="Helvetica", pointsize=6)
+pdf(file=filename, width=4, height=2.5, family="Helvetica", pointsize=6)
 fig1
 dev.off()
 
@@ -368,11 +368,11 @@ dev.off()
 fig2 = ggdraw() +
   draw_plot(figc, x=0.01, y=0.1, width=0.45, height=1)+
   draw_plot(fige, x=1.5/3, y=0, width=0.5, height=1)+
-  draw_plot_label(label=c("A","B"),x=c(0.01, 0.5),y=c(0.58, 5.98), 
+  draw_plot_label(label=c("A","B"),x=c(0.01, 0.5),y=c(0.98, 0.98), 
                   size = 10)
 fig2
 
 filename <- "Results/Results_2020/Fig1bis.pdf"
-pdf(file=filename, width=8, height=2.5, family="Helvetica", pointsize=6)
+pdf(file=filename, width=8, height=3, family="Helvetica", pointsize=6)
 fig2
 dev.off()
