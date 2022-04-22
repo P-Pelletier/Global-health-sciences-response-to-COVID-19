@@ -462,7 +462,7 @@ class Clean_infos:
             { "$match": {
                 "count": { "$gt": 1 }
             }}
-        ])
+        ],allowDiskUse=True)
         
         
         for doc in docs:

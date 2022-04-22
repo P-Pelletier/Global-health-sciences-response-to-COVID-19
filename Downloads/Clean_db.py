@@ -7,9 +7,9 @@ from utils import Clean_infos
 #parser.add_argument('-to_')
 #args = parser.parse_args()
 
-data = Clean_infos('pubmed','pubmed_2019','pubmed_2019_cleaned')
+data = Clean_infos('pubmed_cleaned2019','pubmed','pubmed_cleaned')
 #data.update_db(int(args.from_),int(args.to_))
-data.update_db(int(0),int(5000000))
+data.update_db(int(0),int(6000000))
     
 
     
