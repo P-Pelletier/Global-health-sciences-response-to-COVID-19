@@ -4,7 +4,7 @@ This folder hosts the code, data and results for the paper "Global health scienc
 
 ## Data
 
-pubmed__2019_cleaned.rar contains the cleaned data used for the analysis. You need to insert the json file in a MongoDB to run the scripts. The DB name used is "pubmed" and the collection name "pubmed_2019_cleaned". The session is currently set to localhost on port 27017. Please change parameters if needed.
+pubmed__2019_cleaned.rar https://zenodo.org/record/5011448#.Ykb2PDU68mA contains the cleaned data used for the analysis. You need to insert the json file in a MongoDB to run the scripts. The DB name used is "pubmed" and the collection name "pubmed_2019_cleaned". The session is currently set to localhost on port 27017. Please change parameters if needed.
 
 The json contains the strict minimum to run our analysis, but the Pubmed API gives you more information. If you wish to download the data, you can use the script in the folder "Downloads". First run "Downloads/pubmed_api.py" followed by "Downloads/Clean_db.py".  
 Pubmed_api.py will download every paper starting at the PMID 30M. If you want to download the whole database change line 127 to "inf_dl(collection,start_at = None)". 

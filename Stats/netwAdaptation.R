@@ -16,7 +16,7 @@ rm(list = ls()) ; gc();gc();gc();gc();gc(); ls(); search()
 library(igraph)
 library(plot.matrix)
 library(np)
-setwd('D:/GitHub/Global-health-sciences-response-to-COVID-19')
+setwd('G:/GitHub/Global-health-sciences-response-to-COVID-19')
 
 # load functions #
 source("Network/aux_fcts.R")
@@ -29,9 +29,9 @@ sample <- read_data(path="Data/Data_2021")
 ############# get networks ##########
 # get four networks
 gCovid19 <- get_acc_network(sample=sample, covid=TRUE, start=201901, end=201912, soleAuthored=TRUE)
-gCovid20 <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202012, soleAuthored=TRUE)
+gCovid20 <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202204, soleAuthored=TRUE)
 g19 <- get_acc_network(sample=sample, covid=FALSE, start=201901, end=201912, soleAuthored=TRUE)
-g20 <- get_acc_network(sample=sample, covid=FALSE, start=202001, end=202012, soleAuthored=TRUE)
+g20 <- get_acc_network(sample=sample, covid=FALSE, start=202001, end=202204, soleAuthored=TRUE)
 
 summary(gCovid19)
 summary(gCovid20)
@@ -158,7 +158,7 @@ el = as_tibble(el) %>% rowwise() %>% mutate(collaboration = paste0(c(country_t,c
 logCovid20_pred2 = logCovid20_pred
 n = dim(logCovid20_pred)[1]
 # x^2+y^2=r^2
-y = function(x){round(sqrt(100^2-x^2))}
+y = function(x){round(sqrt(150^2-x^2))}
 y = sapply(1:100,FUN = y)
 
 for(i in 1:100){
@@ -194,7 +194,7 @@ plot_ly(x = ~log19_seq,
                                    ticketmode = 'array',
                                    titlefont = list(color=c('black'),family = 'Helvetica', size = 12)),
                       
-                      zaxis = list(title = 'Coronavirus collab. 2020-21   ',
+                      zaxis = list(title = 'Coronavirus collab. 2020-22   ',
                                    ticktext = tick_text[1:birk::which.closest(tick_vals,z_max)], 
                                    tickvals = tick_vals[1:birk::which.closest(tick_vals,z_max)],
                                    ticketmode = 'array',
@@ -230,7 +230,7 @@ plot_ly(x = ~log19_seq,
                                    ticketmode = 'array',
                                    titlefont = list(color=c('black'),family = 'Helvetica', size = 15)),
                       
-                      zaxis = list(title = 'Coronavirus collab. 2020-21    ',
+                      zaxis = list(title = 'Coronavirus collab. 2020-22    ',
                                    ticktext = tick_text[1:birk::which.closest(tick_vals,z_max)], 
                                    tickvals = tick_vals[1:birk::which.closest(tick_vals,z_max)],
                                    ticketmode = 'array',

@@ -42,11 +42,11 @@ docs = collection.aggregate([
     }
 ])
 
+docs = collection.find({"is_coronavirus_lower":1,"unix":{"$lt":1577836800}})
 
+pmids_post = []
+for doc in tqdm.tqdm(docs):
+    pmids_post.append(doc["pmid"])
 
-
-print(next(docs))
-docs = collection.find({"year":2019,"time.0":doc["time"][0]})
-doc = next(docs)
-doc = doc
-doc["time"][0]
+[i for i in pmids_pre if i not in pmids_post]
+pmids_post

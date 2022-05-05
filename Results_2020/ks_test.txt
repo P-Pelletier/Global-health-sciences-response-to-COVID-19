@@ -1,9 +1,0 @@
-"x"
-"1" "
-\centering
-\begin{tabular}{lcc}
-\hline
-year & 2019 & 2020 \\
-Kolmogorov-Smirnov Test & 6.83803016641171e-05 & 0\\
-\hline
-\end{tabular}"

@@ -124,6 +124,7 @@ def inf_dl(collection,start_at = None):
             print(str(e))
 
 if __name__ == "__main__":
-    inf_dl(collection,start_at = 30000000)
+    inf_dl(collection)
     collection.create_index([ ("pmid",1) ])
+
 

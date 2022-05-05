@@ -15,17 +15,17 @@ library(countrycode)
 library(reshape2)
 library(reldist)
 
-setwd("D:/Github/Global-health-sciences-response-to-COVID-19")
+setwd("G:/Github/Global-health-sciences-response-to-COVID-19")
 
-dataa = read.csv(file="Data/Data_2020/fig1a.csv",
+dataa = read.csv(file="Data/Data_2021/fig1a.csv",
                  header=TRUE,sep=",",stringsAsFactors = FALSE)
-datab = read.csv(file="Data/Data_2020/fig1b.csv",
+datab = read.csv(file="Data/Data_2021/fig1b.csv",
                  header=TRUE,sep=",",stringsAsFactors = FALSE)
-datac = read.csv(file="Data/Data_2020/fig1c.csv",
+datac = read.csv(file="Data/Data_2021/fig1c.csv",
                  header=TRUE,sep=",",stringsAsFactors = FALSE)
-datapareto_share = read.csv(file="Data/Data_2020/pareto_share.csv",
+datapareto_share = read.csv(file="Data/Data_2021/pareto_share.csv",
                  header=TRUE,sep=",",stringsAsFactors = FALSE)
-datapareto = read.csv(file="Data/Data_2020/pareto.csv",
+datapareto = read.csv(file="Data/Data_2021/pareto.csv",
                       header=TRUE,sep=",",stringsAsFactors = FALSE)
 
 # plot 1 ####
@@ -33,22 +33,31 @@ datapareto = read.csv(file="Data/Data_2020/pareto.csv",
 months = unique(dataa$month)
 
 # xlabel
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[24]),##,months[29]), 
-                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Dec 2020"))##, "May 2021" )) 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25],months[32]),##,months[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021"))##, "May 2022" )) 
 
 # margin size
 oma2 <- c(0.3,0,0,0)
 
+dataa$months_number = c(1:34)
+datac$months_number = c(1:34)
+
 #figa
 
-figa = ggplot(dataa, aes(month)) + 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25],months[31]),##,months[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020"))##, "May 2021" )) 
+
+dataa$month
+
+figa = ggplot(dataa, aes(x = month)) + 
   geom_line(size=1.25,aes(y = Coronavirus, colour = "Coronavirus",group = 1)) + 
   geom_line(size=1.25,aes(y = non_Coronavirus, colour = "non_Coronavirus",group = 1))+
   # covid19 treshold
   geom_vline(xintercept = 12,linetype="dashed") +
   scale_color_manual(values=c('#ff7f0e','#1f77b4'))+
   labs(title=element_blank(), y="Number of papers", x=element_blank()) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+  sxd +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 40),
         axis.text.y = element_text(size = 6),
         axis.title.x = element_text(size = 6),
         axis.title.y = element_text(size = 6),
@@ -61,13 +70,12 @@ figa = ggplot(dataa, aes(month)) +
         legend.title=element_blank(),
         legend.position="top",
         legend.text=element_text(size = 6)) +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-              labels = trans_format("log10", math_format(10^.x))) +
-  sxd
+        scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+              labels = trans_format("log10", math_format(10^.x))) 
 
 figa
 #save for future powerpoint
-ggsave("Results/Results_2020/fig1a.png", plot = figa)
+ggsave("Results/Results_2021/fig1a.png", plot = figa)
 
 # plot 2 ####
 
@@ -99,7 +107,7 @@ figb = ggplot(datab) +
                 labels = trans_format("log10", math_format(10^.x)))
 
 figb
-ggsave("Results/Results_2020/fig1b.png", plot = figb)
+ggsave("Results/Results_2021/fig1b.png", plot = figb)
 
 # plot 3 ####
 
@@ -108,15 +116,16 @@ months = unique(datac$month)
 
 sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[24]),##,months[29]), 
                         labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Dec 2020"))##, "May 2021" )) 
+datac$months_number = c(1:34)
 
 figc = ggplot(datac) + 
-  geom_ribbon(aes(x=month,ymin=LCI, ymax=UCI,fill="Tau", group = 1), 
+  geom_ribbon(aes(x=months_number,ymin=LCI, ymax=UCI,fill="Tau", group = 1), 
               alpha=0.2,       #transparency
               linetype=1,      #solid, dashed or other line types
               color=NA, #border line color
               size=1,          #border line size
               fill="#808080")+
-  geom_line(size=1.25,aes(x=month,y = Tau, color = "black",group = 1)) + 
+  geom_line(size=1.25,aes(x=months_number,y = Tau, color = "black",group = 1)) + 
   geom_vline(xintercept = 12,linetype="dashed") +
   scale_fill_manual(values = c("red", "grey", "seagreen3"))+
   scale_colour_manual("", 
@@ -140,7 +149,7 @@ figc = ggplot(datac) +
     sxd
 
 figc
-ggsave("Results/Results_2020/fig1c.png", plot = figc)
+ggsave("Results/Results_2021/fig1c.png", plot = figc)
 
 # plot 5 ####
 
@@ -149,7 +158,7 @@ source("Network/aux_fcts.R")
 source("Network/netw_fcts.R")
 
 # read data
-sample <- read_data(path = 'Data/Data_2020')
+sample <- read_data(path = 'Data/Data_2021')
 
 table(sample$nodeActivity$month)
 
@@ -157,7 +166,7 @@ table(sample$nodeActivity$month)
 
 ########## calculate s-cores ###########
 months <- sort(unique(sample$nodeActivity$month))
-months <- c(201901:201912,202001:202012)#,202101:202105)
+months <- c(201901:201912,202001:202012,202101:202110)
 sCore <- matrix(NA, nrow=nrow(sample$nodelist), ncol=length(months))
 rownames(sCore) <- sample$nodelist$countryCode
 colnames(sCore) <- as.character(months)
@@ -289,7 +298,7 @@ diffPlot <- ggplot(sCoreDiff_df, aes(month, country)) +
 
 #grid.arrange(otherPlot, coronaPlot, diffPlot, legend, widths = c(3, 2, 2.5), nrow = 1)
 fige = grid.arrange(otherPlot, coronaPlot, diffPlot, widths = c(3, 2.2, 3), nrow = 1)
-ggsave("Results/Results_2020/fig1e.png", plot = fige)
+ggsave("Results/Results_2021/fig1e.png", plot = fige)
 
 # plot 6
 
@@ -323,7 +332,7 @@ figf = ggplot(datapareto_share,aes(x=1:nrow(datapareto_share))) +
 
 figf
 #save for future powerpoint
-ggsave("Results/Results_2020/fig1f_post.png", plot = figf)
+ggsave("Results/Results_2021/fig1f_post.png", plot = figf)
 
 # gini figf
 
@@ -335,7 +344,7 @@ gini(datapareto$others_post)
 
 # avengers assemble
   
-img = "Results/Results_2020/Fig1d.png"
+img = "Results/Results_2021/Fig1d.png"
 
 fig1 = ggdraw() +
   draw_plot(figa, x=0, y=1.75/3, width=0.85/3, height=1.4/3)+
@@ -347,7 +356,7 @@ fig1 = ggdraw() +
                   size = 10)
 
 
-filename <- "Results/Results_2020/Fig1.pdf"
+filename <- "Results/Results_2021/Fig1.pdf"
 pdf(file=filename, width=8, height=5, family="Helvetica", pointsize=6)
 fig1
 dev.off()
@@ -358,7 +367,7 @@ fig1 = ggdraw() +
   draw_plot(figa, x=0.05, y=0.05, width=0.9, height=0.9)
 fig1
 
-filename <- "Results/Results_2020/Fig1.pdf"
+filename <- "Results/Results_2021/Fig1.pdf"
 pdf(file=filename, width=4, height=2.5, family="Helvetica", pointsize=6)
 fig1
 dev.off()
@@ -372,7 +381,8 @@ fig2 = ggdraw() +
                   size = 10)
 fig2
 
-filename <- "Results/Results_2020/Fig1bis.pdf"
+filename <- "Results/Results_2021/Fig1bis.pdf"
 pdf(file=filename, width=8, height=3, family="Helvetica", pointsize=6)
 fig2
 dev.off()
+

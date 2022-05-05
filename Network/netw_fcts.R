@@ -75,7 +75,7 @@ add_s_core <- function(g){
   
   # initialization
   n <- 0
-  sCores[[n+1]] <- list(nodes=get.vertex.attribute(gPruned,"countryCode",V(gPruned)), s=0)
+  sCores[[n+1]] <- list(nodes=vertex_attr(gPruned,"countryCode",V(gPruned)), s=0)
   # prune graph
   while(length(V(gPruned))>0){
     # next shell  
@@ -88,7 +88,7 @@ add_s_core <- function(g){
       gPruned <- delete_vertices(gPruned,v=V(gPruned)[idx])
       strengths <- strength(gPruned)
     }
-    sCores[[n+1]] <- list(nodes=get.vertex.attribute(gPruned,"countryCode",V(gPruned)), s=s_n)
+    sCores[[n+1]] <- list(nodes=vertex_attr(gPruned,"countryCode",V(gPruned)), s=s_n)
   }
   # add s-core info to original graph
   V(g)$sCore <- sCores[[1]]$s

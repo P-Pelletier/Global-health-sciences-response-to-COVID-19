@@ -9,7 +9,7 @@ from utils import Clean_infos
 
 data = Clean_infos('pubmed','pubmed_2019','pubmed_2019_cleaned')
 #data.update_db(int(args.from_),int(args.to_))
-data.update_db(int(0),int(5000000))
+data.update_db(int(0),int(6000000))
     
 
     

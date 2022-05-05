@@ -18,7 +18,6 @@ library(igraph)
 library(network)
 library(sna)
 library(blockmodeling)
-
 library(ggplot2)
 library(cowplot)
 library(gridExtra)
@@ -26,7 +25,7 @@ library(RColorBrewer)
 library(tikzDevice)
 
 
-setwd('C:/Users/Beta/Documents/GitHub/Global-health-sciences-response-to-COVID-19')
+setwd('G:/GitHub/Global-health-sciences-response-to-COVID-19')
 # load functions #
 source("Network/aux_fcts.R")
 source("Network/netw_fcts.R")
@@ -35,13 +34,13 @@ source("Network/netw_fcts.R")
 outputPath <- "Results"
 
 # read data
-sample <- read_data(path='Data')
+sample <- read_data(path='Data/Data_2021')
 
 ###### network correlation with QAP over time #######
 
 # result container
 months <- sort(unique(sample$nodeActivity$month))
-months <- c(201901:201912,202001:202012)
+months <- c(201901:201912,202001:202012,202101:202110)
 
 gcor_res <- matrix(NA, nrow=length(months), ncol=2)
 rownames(gcor_res) <- as.character(months)
@@ -99,7 +98,7 @@ rownames(adj1) <- V(g1)$countryCode
 adjLst$cor_precov <- adj1[idx,idx]
 
 #### corona, covid - same ordering
-g <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202012, 
+g <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202110, 
                       soleAuthored=TRUE) 
 adj <- as.matrix(as_adjacency_matrix(graph=g, type="both", attr="weight"))
 adj <- log(adj+1)
@@ -324,11 +323,10 @@ coronaCov <- ggplot(adj_corona_cov, aes(source, target)) +
 
 #######  network correlation (E) ####### 
 months <- rownames(gcor_res)
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[16]), 
-                        labels = c("Jan 2019","Juli 2019", "Jan 2020","April 2020" ))
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25], months[31]), 
+                        labels = c("Jan 2019","Juli 2019", "Jan 2020","july 2020", "Jan 2021","july 2021" ))
 
 gcor_res <- data.frame(month=rownames(gcor_res),gcor_res)
-
 
 
 cor_lineplot <- ggplot(gcor_res, aes(x=month, y=r, group=1)) +
@@ -336,8 +334,8 @@ cor_lineplot <- ggplot(gcor_res, aes(x=month, y=r, group=1)) +
   geom_point() +
   geom_vline(xintercept=12.5, linetype=2) +
   scale_y_continuous(limits=c(0,1)) +
-  scale_x_discrete(breaks=c(months[1],months[7],months[13],months[16]), 
-                 labels = c("Jan 2019","July 2019", "Jan 2020","April 2020" )) +
+  scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25], months[31]), 
+                 labels = c("Jan 2019","July 2019", "Jan 2020","july 2020", "Jan 2021", "july 2021" )) +
   labs(title=element_blank(), x=element_blank(), y="corr. coefficient", caption = element_blank()) + 
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5, size = 6, color="black"), # rel(0.8), color="black"),
         axis.text.y = element_text(size=6, color="black"),
@@ -364,7 +362,7 @@ allthree <- ggdraw() +
                 size = 10)
 
 #filename <- "/Users/moritz/Documents/Research/TechnologicalChange/CoronaSci/COVID_Network_PNAS/networks.pdf"
-filename <- "Results_2020/Fig2.pdf"
+filename <- "Results/Results_2021/Fig2.pdf"
 pdf(file=filename, width=5.7, height=3.5, family="Helvetica", pointsize=6)
 allthree
 dev.off()

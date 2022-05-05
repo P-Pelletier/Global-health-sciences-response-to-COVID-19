@@ -18,7 +18,7 @@ library(sandwich) # for heteroskedasticity-robust standard errors
 
 ########## data handling ###########
 # read data
-sample <- read_data()
+sample <- read_data(path="Data/Data_2021")
 
 
 # prepare data
@@ -34,7 +34,7 @@ tmp <- aggregate(nodeActivity[,c("coronaPubs","noncoronaPubs")], by=list(month=n
 # output per month - corona and non-corona papers
 xtable(t(tmp[1:12,]))
 xtable(t(tmp[13:24,]))
-
+xtable(t(tmp[25:36,]))
 # July seems appropriate - do not want to speculate on holiday in August 
 
 # make no difference between sole pubs and joint pubs
@@ -61,7 +61,7 @@ pubs <- merge(preCovidPubs,covidPubs,by="countryCode")
 head(pubs)
 
 # join (monthly) Covid-19 pubs
-for(month in c(202001:202012)){
+for(month in c(c(202001:202012),c(202101:202112))){
   idx <- nodeActivity$month==month
   tmp <- nodeActivity[idx,c("countryCode","coronaPubs")]
   names(tmp) <- c("countryCode",paste0("coronaPubs_",month))
