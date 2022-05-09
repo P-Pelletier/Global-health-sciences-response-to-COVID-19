@@ -15,7 +15,7 @@ library(countrycode)
 library(reshape2)
 library(reldist)
 
-setwd("G:/Github/Global-health-sciences-response-to-COVID-19")
+setwd("C:/Users/kevin/Documents/Github/Global-health-sciences-response-to-COVID-19")
 
 dataa = read.csv(file="Data/Data_2021/fig1a.csv",
                  header=TRUE,sep=",",stringsAsFactors = FALSE)
@@ -33,7 +33,7 @@ datapareto = read.csv(file="Data/Data_2021/pareto.csv",
 months = unique(dataa$month)
 
 # xlabel
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25],months[32]),##,months[29]), 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25],months[31]),##,months[29]), 
                         labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021"))##, "May 2022" )) 
 
 # margin size
@@ -45,9 +45,7 @@ datac$months_number = c(1:34)
 #figa
 
 sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25],months[31]),##,months[29]), 
-                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020"))##, "May 2021" )) 
-
-dataa$month
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021"))##, "May 2021" )) 
 
 figa = ggplot(dataa, aes(x = month)) + 
   geom_line(size=1.25,aes(y = Coronavirus, colour = "Coronavirus",group = 1)) + 
@@ -57,7 +55,7 @@ figa = ggplot(dataa, aes(x = month)) +
   scale_color_manual(values=c('#ff7f0e','#1f77b4'))+
   labs(title=element_blank(), y="Number of papers", x=element_blank()) +
   sxd +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 40),
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
         axis.text.y = element_text(size = 6),
         axis.title.x = element_text(size = 6),
         axis.title.y = element_text(size = 6),
@@ -114,12 +112,14 @@ ggsave("Results/Results_2021/fig1b.png", plot = figb)
 #Todo geom ribbon not appearing in legend
 months = unique(datac$month)
 
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[24]),##,months[29]), 
-                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Dec 2020"))##, "May 2021" )) 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25],months[31]),##,months[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021"))##, "May 2022" )) 
+
+# margin size
 datac$months_number = c(1:34)
 
 figc = ggplot(datac) + 
-  geom_ribbon(aes(x=months_number,ymin=LCI, ymax=UCI,fill="Tau", group = 1), 
+  geom_ribbon(aes(x=month,ymin=LCI, ymax=UCI,fill="Tau", group = 1), 
               alpha=0.2,       #transparency
               linetype=1,      #solid, dashed or other line types
               color=NA, #border line color
@@ -133,6 +133,7 @@ figc = ggplot(datac) +
                       labels = c("Tau"),
                       values = c("black")) +
   labs(title=element_blank(), y="Rank correlation", x=element_blank()) +
+  sxd +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
         axis.text.y = element_text(size = 6),
         axis.title.x = element_text(size = 6),
@@ -145,8 +146,7 @@ figc = ggplot(datac) +
         legend.key=element_blank(),
         legend.title=element_blank(),
         legend.position="top",
-        legend.text=element_text(size = 6))+
-    sxd
+        legend.text=element_text(size = 6))
 
 figc
 ggsave("Results/Results_2021/fig1c.png", plot = figc)
@@ -229,8 +229,8 @@ redBlueCols <- rev(RColorBrewer::brewer.pal(9,"RdBu"))
 redCols <- redBlueCols[5:9]
 
 # common x labels
-sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[24]),##,months[29]), 
-                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Dec 2020"))##, "May 2021" )) 
+sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],months[25],months[31]),##,months[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021"))##, "May 2022" )) 
 
 # margins
 oma1 <- c(0.5,0,0.5,0)
