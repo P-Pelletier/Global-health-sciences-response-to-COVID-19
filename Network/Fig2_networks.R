@@ -25,7 +25,7 @@ library(RColorBrewer)
 library(tikzDevice)
 
 
-setwd('G:/GitHub/Global-health-sciences-response-to-COVID-19')
+setwd('C:/Users/kevin/Documents/GitHub/Global-health-sciences-response-to-COVID-19')
 # load functions #
 source("Network/aux_fcts.R")
 source("Network/netw_fcts.R")

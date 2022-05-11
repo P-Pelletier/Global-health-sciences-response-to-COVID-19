@@ -21,7 +21,7 @@ mydb = client["pubmed"]
 collection = mydb["pubmed_2019_cleaned"]
 
 start_covid = datetime(2020,1,1)
-last_date = datetime(2021,10,31)
+last_date = datetime(2022,4,30)
 last_date_year = last_date.year
 
 if not os.path.exists("Data/Data_{}".format(str(last_date.year))):
@@ -271,7 +271,7 @@ df_rank_corr.columns = ["Tau","LCI","UCI"]
 
 #figa
 
-dates = list(range(201901,201913,1)) + list(range(202001,202013,1))+list(range(202101,202111,1))
+dates = list(range(201901,201913,1)) + list(range(202001,202013,1))+list(range(202101,202113,1))+list(range(202201,202205,1))
 dates = [str(date)[:4] + "-" + str(date)[4:] for date in dates]
 publication.columns = ["non_Coronavirus","Coronavirus"]
 publication.index = dates
@@ -303,8 +303,10 @@ df_rank_corr.to_csv("Data/Data_{}/fig1c.csv".format(str(last_date_year)), index=
 
 publication.columns = ["non_Coronavirus","Coronavirus"]
 dates = ["Jan 2019", "Feb 2019", "Mar 2019", "Apr 2019", "May 2019", "Jun 2019", "Jul 2019", "Aug 2019", "Sep 2019", "Oct 2019", "Nov 2019", "Dec 2019",
-         "Jan 2020", "Feb 2020", "Mar 2020", "Apr 2020", "May 2020", "Jun 2020", "Jul 2020", "Aug 2020", "Sep 2020", "Oct 2020", "Nov 2020","Dec 2020",
-         "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021", "Jun 2021", "Jul 2021", "Aug 2021", "Sep 2021", "Oct 2021"]
+         "Jan 2020", "Feb 2020", "Mar 2020", "Apr 2020", "May 2020", "Jun 2020", "Jul 2020", "Aug 2020", "Sep 2020", "Oct 2020", "Nov 2020", "Dec 2020",
+         "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021", "Jun 2021", "Jul 2021", "Aug 2021", "Sep 2021", "Oct 2021", "Nov 2021", "Dec 2021",
+         "Jan 2022", "Feb 2022", "Mar 2022", "Apr 2022"]
+
 publication.index = dates
 publication['month'] = publication.index
 publication.to_csv("Data/Data_{}/fig1a.csv".format(str(last_date_year)), index=False)
@@ -317,8 +319,8 @@ ax.axvline(11, color='k', linestyle='--')
 ax.axvline(23, color='k', linestyle='--')
 ax.set_ylabel("Log number of publications")
 ax.set_yscale('log')
-plt.savefig('Results/Results_2021/publication.png')
-tikzplotlib.save("Results/Results_2021/publication.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
+plt.savefig('Results/Results_2022/publication.png')
+tikzplotlib.save("Results/Results_2022/publication.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
 
 '''
 # rank
@@ -363,8 +365,8 @@ lines = [Line2D([0], [0], color=c, linewidth=2, linestyle='-') for c in colors]
 labels = ['Tau',"Jackknife CI"]
 ax.legend(lines, labels,loc=2)
 
-plt.savefig('Results/Results_2021/rank_differences.png')
-tikzplotlib.save("Results/Results_2021/rank_differences.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
+plt.savefig('Results/Results_2022/rank_differences.png')
+tikzplotlib.save("Results/Results_2022/rank_differences.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
 
 
 # barplot of publication aggr of countries
@@ -406,9 +408,9 @@ post = mpatches.Patch(color='dimgrey', label='Post COVID-19')
 font = font_manager.FontProperties(family='sans-serif',
                                    style='normal', size=6)
 plt.legend(handles=[pre, post], loc=1, prop=font)
-plt.savefig('Results/Results_2021/country_publication_log.png')
+plt.savefig('Results/Results_2022/country_publication_log.png')
 # weird bug in tikz, need to change the starting point from 1 to 0.01, guessing that log scale not supported for barplot
-tikzplotlib.save("Results/Results_2021/country_publication_log.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
+tikzplotlib.save("Results/Results_2022/country_publication_log.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
 
 
 
