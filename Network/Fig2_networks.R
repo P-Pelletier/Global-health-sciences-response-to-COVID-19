@@ -25,7 +25,7 @@ library(RColorBrewer)
 library(tikzDevice)
 
 
-setwd('C:/Users/kevin/Documents/GitHub/Global-health-sciences-response-to-COVID-19')
+setwd('G:/GitHub/Global-health-sciences-response-to-COVID-19')
 # load functions #
 source("Network/aux_fcts.R")
 source("Network/netw_fcts.R")
@@ -34,13 +34,13 @@ source("Network/netw_fcts.R")
 outputPath <- "Results"
 
 # read data
-sample <- read_data(path='Data/Data_2021')
+sample <- read_data(path='Data/Data_2022')
 
 ###### network correlation with QAP over time #######
 
 # result container
 months <- sort(unique(sample$nodeActivity$month))
-months <- c(201901:201912,202001:202012,202101:202110)
+months <- c(201901:201912,202001:202012,202101:202112,202201:202203)
 
 gcor_res <- matrix(NA, nrow=length(months), ncol=2)
 rownames(gcor_res) <- as.character(months)
@@ -98,7 +98,7 @@ rownames(adj1) <- V(g1)$countryCode
 adjLst$cor_precov <- adj1[idx,idx]
 
 #### corona, covid - same ordering
-g <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202110, 
+g <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202203, 
                       soleAuthored=TRUE) 
 adj <- as.matrix(as_adjacency_matrix(graph=g, type="both", attr="weight"))
 adj <- log(adj+1)
@@ -362,7 +362,7 @@ allthree <- ggdraw() +
                 size = 10)
 
 #filename <- "/Users/moritz/Documents/Research/TechnologicalChange/CoronaSci/COVID_Network_PNAS/networks.pdf"
-filename <- "Results/Results_2021/Fig2.pdf"
+filename <- "Results/Results_2022/Fig2.pdf"
 pdf(file=filename, width=5.7, height=3.5, family="Helvetica", pointsize=6)
 allthree
 dev.off()

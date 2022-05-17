@@ -21,7 +21,7 @@ mydb = client["pubmed"]
 collection = mydb["pubmed_2019_cleaned"]
 
 start_covid = datetime(2020,1,1)
-last_date = datetime(2022,4,30)
+last_date = datetime(2022,3,31)
 last_date_year = last_date.year
 
 if not os.path.exists("Data/Data_{}".format(str(last_date.year))):
@@ -271,7 +271,7 @@ df_rank_corr.columns = ["Tau","LCI","UCI"]
 
 #figa
 
-dates = list(range(201901,201913,1)) + list(range(202001,202013,1))+list(range(202101,202113,1))+list(range(202201,202205,1))
+dates = list(range(201901,201913,1)) + list(range(202001,202013,1))+list(range(202101,202113,1))+list(range(202201,202204,1))
 dates = [str(date)[:4] + "-" + str(date)[4:] for date in dates]
 publication.columns = ["non_Coronavirus","Coronavirus"]
 publication.index = dates
@@ -301,11 +301,11 @@ df_rank_corr.to_csv("Data/Data_{}/fig1c.csv".format(str(last_date_year)), index=
 
 # n_pub
 
-publication.columns = ["non_Coronavirus","Coronavirus"]
+publication.columns = ["non_Coronavirus","Coronavirus", 'month']
 dates = ["Jan 2019", "Feb 2019", "Mar 2019", "Apr 2019", "May 2019", "Jun 2019", "Jul 2019", "Aug 2019", "Sep 2019", "Oct 2019", "Nov 2019", "Dec 2019",
          "Jan 2020", "Feb 2020", "Mar 2020", "Apr 2020", "May 2020", "Jun 2020", "Jul 2020", "Aug 2020", "Sep 2020", "Oct 2020", "Nov 2020", "Dec 2020",
          "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021", "Jun 2021", "Jul 2021", "Aug 2021", "Sep 2021", "Oct 2021", "Nov 2021", "Dec 2021",
-         "Jan 2022", "Feb 2022", "Mar 2022", "Apr 2022"]
+         "Jan 2022", "Feb 2022", "Mar 2022"]
 
 publication.index = dates
 publication['month'] = publication.index

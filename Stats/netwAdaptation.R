@@ -24,14 +24,14 @@ source("Network/netw_fcts.R")
 #source("Network/lowrankAdjacency/opt_fcts.R")
 
 # read data
-sample <- read_data(path="Data/Data_2021")
+sample <- read_data(path="Data/Data_2022")
 
 ############# get networks ##########
 # get four networks
 gCovid19 <- get_acc_network(sample=sample, covid=TRUE, start=201901, end=201912, soleAuthored=TRUE)
-gCovid20 <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202204, soleAuthored=TRUE)
+gCovid20 <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202203, soleAuthored=TRUE)
 g19 <- get_acc_network(sample=sample, covid=FALSE, start=201901, end=201912, soleAuthored=TRUE)
-g20 <- get_acc_network(sample=sample, covid=FALSE, start=202001, end=202204, soleAuthored=TRUE)
+g20 <- get_acc_network(sample=sample, covid=FALSE, start=202001, end=202203, soleAuthored=TRUE)
 
 summary(gCovid19)
 summary(gCovid20)
@@ -242,7 +242,7 @@ plot_ly(x = ~log19_seq,
             )) #, symbol = 104))
 
 
-save.image(file = 'np_reg_2021.RData')
+save.image(file = 'np_reg_2022.RData')
 
 
 
