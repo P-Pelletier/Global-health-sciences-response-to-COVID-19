@@ -1,1 +1,3 @@
 *.log
+Data/pubmed_2019_cleaned_pre.zip
+Data/pubmed_2019_cleaned_pre/pubmed_2019_cleaned.json
