@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import datetime
@@ -7,6 +8,9 @@ import csv
 from crossref.restful import Works
 import pandas as pd
 import json
+
+
+
 
 class Clean_infos:
     
@@ -30,12 +34,12 @@ class Clean_infos:
         '''
         
         #self.year_window = year_window
-        client = pymongo.MongoClient('mongodb://localhost:27017/')
+        client = pymongo.MongoClient('mongodb://Pierre:ilovebeta67@localhost:27017')
         self.db = client[db_name]
         self.collection = self.db[coll_name]
         self.collection_clean = self.db[coll_name_clean]
         self.df = self.collection.find()
-        csv_f = open(r'cleaned_cities_loc.csv','r', encoding='utf-8')
+        csv_f = open(r'Data/cleaned_cities_loc.csv','r', encoding='utf-8')
         self.works = Works()
         self.cities = [i for i in  csv.reader(csv_f)]
         csv_f.close() 
@@ -400,7 +404,7 @@ class Clean_infos:
         
         df = [paper for paper in tqdm.tqdm(df[from_:to_])]
         for paper in tqdm.tqdm(df):
-            if paper['unix_received'] is not None and all([paper['pmid'] not in pmid_clean,paper['unix_received']> 1546300800]):
+            if paper['unix_received'] is not None and all([paper['pmid'] not in pmid_clean,paper['unix_received']> 1420070400]):
                 try:
                     query, newvalues = self.set_new_values(paper)
                     if  paper['doi'] is not None: 
@@ -436,7 +440,7 @@ class Clean_infos:
         df_list = []
         for doc in tqdm.tqdm(df):
             try:
-                if 'unix_received' in doc.keys() and doc['unix_received'] is not None and doc['unix_received']> 1546300800:
+                if 'unix_received' in doc.keys() and doc['unix_received'] is not None and doc['unix_received']> 1420070400:
                     df_list.append(doc)
             except:
                 pass
@@ -485,13 +489,48 @@ class Clean_infos:
         df_list = []
         for doc in tqdm.tqdm(df):
             try:
-                if 'unix_received' in doc.keys() and doc['unix_received'] is not None and doc['unix_received']> 1546300800:
+                if 'unix_received' in doc.keys() and doc['unix_received'] is not None and doc['unix_received']> 1420070400:
                     doc.pop('_id')
                     df_list.append(doc)
             except:
                 pass
         with open('../Data/data.json', 'w') as json_file:
             json.dump(df_list,json_file)
+            
+    def issn2categories(self, path_issn_files = "Data/ISSN"):
+        # unique issn
+
+        issn_list = []
+        docs = self.collection_clean.find()
+        n = 0
+        for doc in tqdm.tqdm(docs):
+            issn_list.append(doc["ISSN"])
+            n += 1
+            if n % 100000 == 0:
+                issn_list = list(set(issn_list))
+
+        issn_list = list(set(issn_list))
+        
+        # assign directory
+        directory = path_issn_files
+         
+        # iterate over files in
+        # that directory
+        df = pd.DataFrame()
+        for filename in os.listdir(directory):
+            f = os.path.join(directory, filename)
+            # checking if it is a file
+            if os.path.isfile(f):
+               df = pd.concat([df,pd.read_csv(f)])
+        issn2cat = {}
+        for issn in issn_list:
+            issn2cat[issn] = str(df[df["ISSN"] == issn]["Web of Science Categories"])
+
+        docs = self.collection_clean.find({},no_cursor_timeout=True)
+        
+        for doc in tqdm.tqdm(docs):
+            cat = issn2cat[doc["ISSN"]]
+            self.collection_clean.update_one({'pmid':doc["pmid"]},{"$set":{'wos_cat':cat}},upsert=False)
             
 
 ####♥

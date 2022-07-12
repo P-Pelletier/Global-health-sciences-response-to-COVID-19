@@ -288,11 +288,7 @@ make_box_plot <-  function(df,var,is_covid){
 
 setwd('C:/Users/Beta/Documents/GitHub/Global-health-sciences-response-to-COVID-19/Stats')
 library(lubridate)
-db <- mongo(collection = "covid_papers",
-            db = "pubmed_covid_240621",
-            url = "mongodb://Pierre:ilovebeta67@localhost:27017/")
 
-iterator <- db$iterate()
 df <- fread("D:/otherdata/pubmed_covid_240621.csv")
 setDT(df)
 

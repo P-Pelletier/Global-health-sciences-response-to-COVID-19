@@ -2,7 +2,7 @@ import requests
 import re
 import tqdm
 import pymongo
-
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -25,9 +25,9 @@ end_pmid = element.text
 driver.close()
 
 # Open mongodb collection
-client = pymongo.MongoClient('mongodb://localhost:27017/')
+client = pymongo.MongoClient('mongodb://Pierre:ilovebeta67@localhost:27017/')
 mydb = client["pubmed"]
-collection = mydb["pubmed_2019"]
+collection = mydb["pubmed_2015"]
 
 def inf_dl(collection,start_at = None):
 
@@ -36,6 +36,7 @@ def inf_dl(collection,start_at = None):
     
 
     while working == True:
+        time.sleep(3)
         # If you specified a start_at then no need to load a previous pmid for the first iteration
         if start_at:
             last_id = int(start_at)

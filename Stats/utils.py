@@ -1,14 +1,16 @@
-import tqdm
-import pandas as pd
-import numpy as np
 import re
+import tqdm
+import numpy as np
+import pandas as pd
 from datetime import datetime
+from collections import defaultdict
 from dateutil.relativedelta import relativedelta
-
+import pickle
+from os.path import exists
 
 class Create_net:
     
-    def __init__(self,collection, query, last_date, lag = 0, unix_type = "unix_received"):
+    def __init__(self,collection, query, last_date, start_date, lag = 0, unix_type = "unix_received"):
         
         '''
 
@@ -32,6 +34,7 @@ class Create_net:
 
         self.collection = collection
         self.query = query
+        self.start_date = int(start_date)
         self.last_date = int(last_date)
         self.lag = lag
         self.unix_type = unix_type
@@ -110,42 +113,51 @@ class Create_net:
         list of cities found in self.collection
         '''
         
-        data = self.collection.find()
-        self.scale = scale
-        city_country_list = []
-        time_period = []
-        
-        for paper in tqdm.tqdm(data):
-            date = self.get_unix(paper)
-            if int(date) <= self.last_date:
-                if date not in time_period:
-                    time_period.append(date)
-                try:
-                    if self.scale == "city":
-                        for author in paper["Location_cities"]:
-                            city = paper["Location_cities"][author]["city"]
-                            country = paper["Location_cities"][author]["country"]
-                            if country in ["country","Eswatini","Kosovo","Micronesia"]:
-                                continue      
-                            if city and country != None:                  
-                                loc = self.clean_loc(city + "_" + country)
-                                if loc not in city_country_list:
-                                    city_country_list.append(loc)
-                    else:
-                        for author in paper["Location_cities_country"]:
-                            country = paper["Location_cities_country"][author]["country"]
-                            if country in ["country","Eswatini","Kosovo","Micronesia"]:
-                                continue      
-                            if country != None:
-                                loc = self.clean_loc(country)
-                                if loc not in city_country_list:
-                                    city_country_list.append(loc)
-                except Exception as e:
-                    print(str(e))
-        
-        time_period.sort()
-        self.city_country_list = city_country_list
-        self.time_period = time_period
+        file1_exists = exists("Data/city_country_list.p")
+        file2_exists = exists("Data/time_period.p")
+
+        if file1_exists and file2_exists:
+            self.city_country_list = pickle.load( open( "Data/city_country_list.p", "rb" ) )
+            self.time_period = pickle.load( open( "Data/time_period.p", "rb" ) )
+        else:
+            data = self.collection.find()
+            self.scale = scale
+            city_country_list = []
+            time_period = []
+            
+            for paper in tqdm.tqdm(data):
+                date = self.get_unix(paper)
+                if int(date) <= self.last_date and int(date) >= self.start_date:
+                    if date not in time_period:
+                        time_period.append(date)
+                    try:
+                        if self.scale == "city":
+                            for author in paper["Location_cities"]:
+                                city = paper["Location_cities"][author]["city"]
+                                country = paper["Location_cities"][author]["country"]
+                                if country in ["country","Eswatini","Kosovo","Micronesia"]:
+                                    continue      
+                                if city and country != None:                  
+                                    loc = self.clean_loc(city + "_" + country)
+                                    if loc not in city_country_list:
+                                        city_country_list.append(loc)
+                        else:
+                            for author in paper["Location_cities_country"]:
+                                country = paper["Location_cities_country"][author]["country"]
+                                if country in ["country","Eswatini","Kosovo","Micronesia"]:
+                                    continue      
+                                if country != None:
+                                    loc = self.clean_loc(country)
+                                    if loc not in city_country_list:
+                                        city_country_list.append(loc)
+                    except Exception as e:
+                        print(str(e))
+            
+            time_period.sort()
+            self.city_country_list = city_country_list
+            self.time_period = time_period
+            pickle.dump( self.time_period, open( "Data/time_period.p", "wb" ) )
+            pickle.dump( self.city_country_list, open( "Data/city_country_list.p", "wb" ) )
 
     def populate_publication_dict(self):
         '''
@@ -170,7 +182,7 @@ class Create_net:
 
         for paper in tqdm.tqdm(self.data):
             date = self.get_unix(paper)
-            if int(date) <= self.last_date:
+            if int(date) <= self.last_date and int(date) >= self.start_date:
                 # get list of country for each author 
                 temp_list_country = []
                 if self.scale == "city":
@@ -200,7 +212,39 @@ class Create_net:
                     else:
                         self.n_publication_add[date].at[loc, "solePubs"] += 1 
         
+    def country_participation(self):
+        
+        self.start_gen()
+        df = pd.DataFrame(np.zeros((len(self.city_country_list), 1)))
+        df.index = self.city_country_list
+        df.columns = ["n_participation"]
+        self.authors_participation = {key: df.copy() for key in self.time_period}
+        self.authors_list = {key: defaultdict(list) for key in self.time_period}
+        
+        for paper in tqdm.tqdm(self.data):
+            date = self.get_unix(paper)
+            if int(date) <= self.last_date and int(date) >= self.start_date:
+                if self.scale == "city":
+                    for author in paper["Location_cities"]:
+                        city = paper["Location_cities"][author]["city"]
+                        country = paper["Location_cities"][author]["country"]
+                        name = paper["Location_cities"][author]["name"]
+                        if country in ["country","Eswatini","Kosovo","Micronesia"]:
+                            continue
+                        if city and country != None:
+                            loc = self.clean_loc(city + "_" + country)
+                            self.authors_list[date][loc].append(name)
+                else:
+                    for author in paper["Location_cities_country"]:
+                        country = paper["Location_cities_country"][author]["country"]
+                        name = paper["Location_cities_country"][author]["name"]
+                        if country in ["country","Eswatini","Kosovo","Micronesia"]:
+                            continue                        
+                        if country != None:
+                            self.authors_list[date][country].append(name)
+        for date in self.authors_list:
+            for loc in self.authors_list[date]:
+                self.authors_participation[date].at[loc, "n_participation"] = len(set(self.authors_list[date][loc]))
+            
                 
-
-
-
+        
