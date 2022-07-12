@@ -501,7 +501,7 @@ class Clean_infos:
         # unique issn
 
         issn_list = []
-        docs = self.collection_clean.find()
+        docs =  self.collection_clean.find()
         n = 0
         for doc in tqdm.tqdm(docs):
             issn_list.append(doc["ISSN"])
@@ -524,7 +524,10 @@ class Clean_infos:
                df = pd.concat([df,pd.read_csv(f)])
         issn2cat = {}
         for issn in issn_list:
-            issn2cat[issn] = str(df[df["ISSN"] == issn]["Web of Science Categories"])
+            try:
+                issn2cat[issn] = df[df["ISSN"] == issn]["Web of Science Categories"].values[0]
+            except:
+                pass
 
         docs = self.collection_clean.find({},no_cursor_timeout=True)
         

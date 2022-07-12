@@ -115,13 +115,13 @@ class Create_net:
         
         file1_exists = exists("Data/city_country_list.p")
         file2_exists = exists("Data/time_period.p")
+        self.scale = scale
 
         if file1_exists and file2_exists:
             self.city_country_list = pickle.load( open( "Data/city_country_list.p", "rb" ) )
             self.time_period = pickle.load( open( "Data/time_period.p", "rb" ) )
         else:
             data = self.collection.find()
-            self.scale = scale
             city_country_list = []
             time_period = []
             
