@@ -16,12 +16,13 @@ countries = {}
 for country in pycountry.countries:
     countries[country.name] = country.alpha_2
 
-client = pymongo.MongoClient('mongodb://localhost:27017/')
+client = pymongo.MongoClient('mongodb://Pierre:ilovebeta67@localhost:27017/')
 mydb = client["pubmed"]
-collection = mydb["pubmed_2019_cleaned"]
+collection = mydb["pubmed_2015_cleaned"]
 
+start_date = datetime(2015,1,1)
 start_covid = datetime(2020,1,1)
-last_date = datetime(2022,3,31)
+last_date = datetime(2021,12,31)
 last_date_year = last_date.year
 
 if not os.path.exists("Data/Data_{}".format(str(last_date.year))):
@@ -34,9 +35,15 @@ if len(str(last_date.month)) == 1:
 else:
     last_date = int(str(last_date.year)+ str(last_date.month))
 
+
+if len(str(start_date.month)) == 1:
+    start_date = int(str(start_date.year)+"0"+ str(start_date.month))
+else:
+    start_date = int(str(start_date.year)+ str(start_date.month))
+
 # Create corona pub dict
 
-instance_corona = Create_net(collection,{"$and":[{"is_coronavirus_lower":1}]},last_date = last_date )
+instance_corona = Create_net(collection,{"$and":[{"is_coronavirus_lower":1}]},last_date = last_date, start_date = start_date)
 instance_corona.create_list_city(scale = "country")
 instance_corona.populate_publication_dict()
 pub_corona = instance_corona.n_publication
@@ -44,10 +51,25 @@ time_period = instance_corona.time_period
 
 # Create others pub dict
 
-instance_others = Create_net(collection,{"$and":[{"is_coronavirus_lower":0}]},last_date = last_date )
+instance_others = Create_net(collection,{"$and":[{"is_coronavirus_lower":0}]},last_date = last_date, start_date = start_date)
 instance_others.create_list_city(scale = "country")
 instance_others.populate_publication_dict()
 pub_data = instance_others.n_publication
+
+# Create authors_participation
+
+instance_others = Create_net(collection,{"$and":[{"is_coronavirus_lower":0}]},last_date = last_date, start_date = start_date)
+instance_others.create_list_city(scale = "country")
+instance_others.country_participation()
+author = instance_others.authors_participation
+
+# Create authors_participation
+
+instance_corona = Create_net(collection,{"$and":[{"is_coronavirus_lower":1}]},last_date = last_date, start_date = start_date)
+instance_corona.create_list_city(scale = "country")
+instance_corona.populate_publication_dict()
+author_corona = instance_corona.authors_participation
+
 
 # additionnal info of publications for others scripts
 
@@ -64,6 +86,7 @@ for month in tqdm.tqdm(time_period):
 
 add_info['country'] = add_info.index
 add_info.to_csv("Data/Data_{}/country_pub_info.csv".format(str(last_date_year)), index=False)
+
 
 
 #%% n_pub per month covid vs non-covid
@@ -271,7 +294,7 @@ df_rank_corr.columns = ["Tau","LCI","UCI"]
 
 #figa
 
-dates = list(range(201901,201913,1)) + list(range(202001,202013,1))+list(range(202101,202113,1))+list(range(202201,202204,1))
+dates = list(range(201901,201913,1)) + list(range(202001,202013,1))+list(range(202101,202106,1))
 dates = [str(date)[:4] + "-" + str(date)[4:] for date in dates]
 publication.columns = ["non_Coronavirus","Coronavirus"]
 publication.index = dates
@@ -301,17 +324,17 @@ df_rank_corr.to_csv("Data/Data_{}/fig1c.csv".format(str(last_date_year)), index=
 
 # n_pub
 
-publication.columns = ["non_Coronavirus","Coronavirus", 'month']
-dates = ["Jan 2019", "Feb 2019", "Mar 2019", "Apr 2019", "May 2019", "Jun 2019", "Jul 2019", "Aug 2019", "Sep 2019", "Oct 2019", "Nov 2019", "Dec 2019",
-         "Jan 2020", "Feb 2020", "Mar 2020", "Apr 2020", "May 2020", "Jun 2020", "Jul 2020", "Aug 2020", "Sep 2020", "Oct 2020", "Nov 2020", "Dec 2020",
-         "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021", "Jun 2021", "Jul 2021", "Aug 2021", "Sep 2021", "Oct 2021", "Nov 2021", "Dec 2021",
-         "Jan 2022", "Feb 2022", "Mar 2022"]
+fig, ax = plt.subplots(1, 1, figsize=(3, 2), dpi=300)
 
+publication.columns = ["non_Coronavirus","Coronavirus"]
+dates = ["Jan 2019", "Feb 2019", "Mar 2019", "Apr 2019", "May 2019", "Jun 2019", "Jul 2019", "Aug 2019", "Sep 2019", "Oct 2019", "Nov 2019", "Dec 2019",
+         "Jan 2020", "Feb 2020", "Mar 2020", "Apr 2020", "May 2020", "Jun 2020", "Jul 2020", "Aug 2020", "Sep 2020", "Oct 2020", "Nov 2020","Dec 2020",
+         "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021"]
 publication.index = dates
 publication['month'] = publication.index
 publication.to_csv("Data/Data_{}/fig1a.csv".format(str(last_date_year)), index=False)
 
-fig, ax = plt.subplots(1, 1, figsize=(3, 2), dpi=300)
+
 
 publication.plot(ax=ax,lw=2)#,title="Corona vs non corona\n log number of article per month")
 plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
@@ -319,8 +342,8 @@ ax.axvline(11, color='k', linestyle='--')
 ax.axvline(23, color='k', linestyle='--')
 ax.set_ylabel("Log number of publications")
 ax.set_yscale('log')
-plt.savefig('Results/Results_2022/publication.png')
-tikzplotlib.save("Results/Results_2022/publication.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
+plt.savefig('../Results_2021/publication.png')
+tikzplotlib.save("../Results_2021/publication.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
 
 '''
 # rank
@@ -365,8 +388,8 @@ lines = [Line2D([0], [0], color=c, linewidth=2, linestyle='-') for c in colors]
 labels = ['Tau',"Jackknife CI"]
 ax.legend(lines, labels,loc=2)
 
-plt.savefig('Results/Results_2022/rank_differences.png')
-tikzplotlib.save("Results/Results_2022/rank_differences.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
+plt.savefig('../Results_2021/rank_differences.png')
+tikzplotlib.save("../Results_2021/rank_differences.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
 
 
 # barplot of publication aggr of countries
@@ -381,12 +404,11 @@ df1 = (pub_data_aggr["corona_pre"]["n_pub"].T[top].T)
 df2 = (pub_data_aggr["corona_post"]["n_pub"].T[top].T)
 #df2.sum()/pub_data_aggr["corona_post"]["n_pub"].sum()
 df_barplot = pd.concat([df1,df2],axis=1)
-
 df_barplot['country'] = df_barplot.index
 df_barplot.to_csv("Data/Data_{}/fig1b.csv".format(str(last_date_year)), index=False)
 
 
-df_barplot.columns = ["corona related pre covid", "corona related post covid","country"]
+df_barplot.columns = ["corona related pre covid", "corona related post covid"]
 df_barplot = df_barplot#.apply(np.log)
 labels = [countries.get(country, 'Unknown code') for country in top]
 
@@ -408,9 +430,9 @@ post = mpatches.Patch(color='dimgrey', label='Post COVID-19')
 font = font_manager.FontProperties(family='sans-serif',
                                    style='normal', size=6)
 plt.legend(handles=[pre, post], loc=1, prop=font)
-plt.savefig('Results/Results_2022/country_publication_log.png')
+plt.savefig('../Results_2021/country_publication_log.png')
 # weird bug in tikz, need to change the starting point from 1 to 0.01, guessing that log scale not supported for barplot
-tikzplotlib.save("Results/Results_2022/country_publication_log.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
+tikzplotlib.save("../Results_2021/country_publication_log.tex", axis_height='3.58cm', axis_width='6.12cm',dpi=300)
 
 
 
