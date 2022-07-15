@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from collections import defaultdict
+import collections
 from dateutil.relativedelta import relativedelta
 import pickle
 from os.path import exists
@@ -212,39 +213,47 @@ class Create_net:
                     else:
                         self.n_publication_add[date].at[loc, "solePubs"] += 1 
         
-    def country_participation(self):
+    def populate_publication_dict_full_count(self):
+        '''
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Different of publication by country for each month and type of research (type of research specified in query)
+        '''
         
         self.start_gen()
-        df = pd.DataFrame(np.zeros((len(self.city_country_list), 1)))
-        df.index = self.city_country_list
-        df.columns = ["n_participation"]
-        self.authors_participation = {key: df.copy() for key in self.time_period}
-        self.authors_list = {key: defaultdict(list) for key in self.time_period}
+        self.n_publication_full_count = pd.DataFrame(np.zeros((len(self.city_country_list), 4)))
+        self.n_publication_full_count.index = self.city_country_list
+        self.n_publication_full_count.columns = ["pmid","country","n_author","year"]
         
         for paper in tqdm.tqdm(self.data):
             date = self.get_unix(paper)
             if int(date) <= self.last_date and int(date) >= self.start_date:
+                # get list of country for each author 
+                temp_list_country = []
                 if self.scale == "city":
                     for author in paper["Location_cities"]:
                         city = paper["Location_cities"][author]["city"]
                         country = paper["Location_cities"][author]["country"]
-                        name = paper["Location_cities"][author]["name"]
                         if country in ["country","Eswatini","Kosovo","Micronesia"]:
                             continue
                         if city and country != None:
                             loc = self.clean_loc(city + "_" + country)
-                            self.authors_list[date][loc].append(name)
+                            temp_list_country.append(loc)
                 else:
                     for author in paper["Location_cities_country"]:
                         country = paper["Location_cities_country"][author]["country"]
-                        name = paper["Location_cities_country"][author]["name"]
                         if country in ["country","Eswatini","Kosovo","Micronesia"]:
                             continue                        
                         if country != None:
-                            self.authors_list[date][country].append(name)
-        for date in self.authors_list:
-            for loc in self.authors_list[date]:
-                self.authors_participation[date].at[loc, "n_participation"] = len(set(self.authors_list[date][loc]))
-            
+                            loc = self.clean_loc(country)
+                            temp_list_country.append(loc)
                 
-        
+                counter=collections.Counter(temp_list_country)
+                for country in counter:
+                    name = country
+                    freq = counter[country]    
+                    self.n_publication_full_count.append([paper["pmid"],name,freq,date])
+

@@ -56,20 +56,21 @@ instance_others.create_list_city(scale = "country")
 instance_others.populate_publication_dict()
 pub_data = instance_others.n_publication
 
-# Create authors_participation
 
-participation_others = Create_net(collection,{"$and":[{"is_coronavirus_lower":0}]},last_date = last_date, start_date = start_date)
-participation_others.create_list_city(scale = "country")
-participation_others.country_participation()
-author = participation_others.authors_participation
+# Create corona pub dict
 
-# Create authors_participation
+instance_corona = Create_net(collection,{"$and":[{"is_coronavirus_lower":1}]},last_date = last_date, start_date = start_date)
+instance_corona.create_list_city(scale = "country")
+instance_corona.populate_publication_dict_full_count()
+pub_corona = instance_corona.n_publication_full_count
+time_period = instance_corona.time_period
 
-participation_corona = Create_net(collection,{"$and":[{"is_coronavirus_lower":1}]},last_date = last_date, start_date = start_date)
-participation_corona.create_list_city(scale = "country")
-participation_corona.country_participation()
-author_corona = participation_corona.authors_participation
+# Create others pub dict
 
+instance_others = Create_net(collection,{"$and":[{"is_coronavirus_lower":0}]},last_date = last_date, start_date = start_date)
+instance_others.create_list_city(scale = "country")
+instance_others.populate_publication_dict_full_count()
+pub_data = instance_others.n_publication_full_count
 
 # additionnal info of publications for others scripts
 
@@ -80,8 +81,7 @@ add_info = pd.DataFrame()
 
 for month in tqdm.tqdm(time_period):
     add_corona[month].columns = ["solePubsCorona","collabPubsCorona"]    
-    author_corona[month].columns = ["Participation_Corona"]    
-    test = pd.concat([add_others[month],add_corona[month], author[month], author_corona[month]],axis=1)
+    test = pd.concat([add_others[month],add_corona[month]],axis=1)
     test.insert(0, 'month', month)
     add_info = add_info.append(test)
 

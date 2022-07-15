@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 
 class Create_net:
     
-    def __init__(self,collection, query, last_date, lag = 0, unix_type = "unix_received"):
+    def __init__(self,collection, query, last_date, start_date, lag = 0, unix_type = "unix_received"):
         
         '''
 
@@ -37,6 +37,7 @@ class Create_net:
         self.collection = collection
         self.query = query
         self.last_date = int(last_date)
+        self.start_date = int(start_date)        
         self.lag = lag
         self.unix_type = unix_type
     
@@ -117,7 +118,7 @@ class Create_net:
         
         for paper in tqdm.tqdm(data):
             date = self.get_unix(paper)
-            if int(date) <= self.last_date:
+            if int(date) <= self.last_date and int(date) >= self.start_date:
                 if date not in time_period:
                     time_period.append(date)
                 try:
@@ -177,7 +178,7 @@ class Create_net:
         self.init_network()
         for paper in tqdm.tqdm(self.data):
             date = self.get_unix(paper)
-            if int(date) <= self.last_date:
+            if int(date) <= self.last_date and int(date) >= self.start_date:
                 # get list of country for each author 
                 temp_list_country = []
                 if self.scale == "city":

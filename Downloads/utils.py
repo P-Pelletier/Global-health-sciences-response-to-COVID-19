@@ -532,9 +532,11 @@ class Clean_infos:
         docs = self.collection_clean.find({},no_cursor_timeout=True)
         
         for doc in tqdm.tqdm(docs):
-            cat = issn2cat[doc["ISSN"]]
-            self.collection_clean.update_one({'pmid':doc["pmid"]},{"$set":{'wos_cat':cat}},upsert=False)
-            
+            try:
+                cat = issn2cat[doc["ISSN"]]
+                self.collection_clean.update_one({'pmid':doc["pmid"]},{"$set":{'wos_cat':cat}},upsert=False)
+            except:
+                pass
 
 ####♥
 
