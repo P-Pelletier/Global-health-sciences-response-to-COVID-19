@@ -85,6 +85,9 @@ for month in tqdm.tqdm(time_period):
     test.insert(0, 'month', month)
     add_info = add_info.append(test)
 
+n_publication_full_count = pd.DataFrame()Aggregaten_publication_full_count.columns = ["pmid","country","n_author","year"]
+
+
 add_info['country'] = add_info.index
 add_info.to_csv("Data/Data_{}/country_pub_info.csv".format(str(last_date_year)), index=False)
 
