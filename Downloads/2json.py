@@ -9,13 +9,13 @@ import pymongo
 import tqdm
 import json
 
-client = pymongo.MongoClient('mongodb://Pierre:ilovebeta67@localhost:27017')
+client = pymongo.MongoClient('mongodb://localhost:27017')
 db = client['pubmed']
 col= db['pubmed_2015_cleaned']
 
-n = col.count_documents({"wos_cat":{"$exists":1}})
+#n = col.count_documents({"wos_cat":{"$exists":1}})
 
-#col.update_many({}, { "$unset" : { "wos_cat" : 1} })
+col.update_many({}, { "$unset" : { "wos_cat" : 1} })
 
 reqs = [({'unix_received':{'$gt':1420070400,'$lt':1451606400}},2015),
 ({'unix_received':{'$gt':1451606400,'$lt':1483228800}},2016),

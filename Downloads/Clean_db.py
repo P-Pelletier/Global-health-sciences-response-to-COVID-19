@@ -7,9 +7,9 @@ from Downloads.utils import Clean_infos
 #parser.add_argument('-to_')
 #args = parser.parse_args()
 
-data = Clean_infos('pubmed','pubmed_cleaned','pubmed_2015_cleaned')
+data = Clean_infos('pubmed','pubmed_2015','pubmed_2015_cleaned')
 #data.update_db(int(args.from_),int(args.to_))
-data.update_db(int(0),int(6000000))
+data.update_db(int(0),int(11000000))
     
 
     

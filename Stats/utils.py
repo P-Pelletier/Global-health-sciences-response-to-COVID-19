@@ -224,8 +224,8 @@ class Create_net:
         '''
         
         self.start_gen()
-        self.n_publication_full_count = pd.DataFrame()
-        self.n_publication_full_count.columns = ["pmid","country","n_author","year"]
+
+        self.n_publication_full_count = pd.DataFrame(columns=["pmid","country","n_author","year"])
         
         for paper in tqdm.tqdm(self.data):
             date = self.get_unix(paper)
@@ -254,5 +254,5 @@ class Create_net:
                 for country in counter:
                     name = country
                     freq = counter[country]    
-                    self.n_publication_full_count.append([paper["pmid"],name,freq,date])
+                    self.n_publication_full_count.loc[len(self.n_publication_full_count)] = [paper["pmid"],name,freq,date]
 

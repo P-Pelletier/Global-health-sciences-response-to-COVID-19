@@ -34,7 +34,7 @@ class Clean_infos:
         '''
         
         #self.year_window = year_window
-        client = pymongo.MongoClient('mongodb://Pierre:ilovebeta67@localhost:27017')
+        client = pymongo.MongoClient('mongodb://localhost:27017')
         self.db = client[db_name]
         self.collection = self.db[coll_name]
         self.collection_clean = self.db[coll_name_clean]
@@ -534,9 +534,9 @@ class Clean_infos:
         for doc in tqdm.tqdm(docs):
             try:
                 cat = issn2cat[doc["ISSN"]]
-                self.collection_clean.update_one({'pmid':doc["pmid"]},{"$set":{'wos_cat':cat}},upsert=False)
             except:
-                pass
+                continue
+            self.collection_clean.update_one({'pmid':doc["pmid"]},{"$set":{'wos_cat':cat}},upsert=False)
 
 ####♥
 

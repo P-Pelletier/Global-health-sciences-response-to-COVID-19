@@ -93,6 +93,7 @@ add_info.to_csv("Data/Data_{}/country_pub_info.csv".format(str(last_date_year)),
 
 
 
+
 #%% n_pub per month covid vs non-covid
 
 
