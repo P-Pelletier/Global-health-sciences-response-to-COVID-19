@@ -13,5 +13,5 @@ data.update_db(int(0),int(11000000))
     
 
     
-
+data.restrict_medline()
 data.issn2categories()
