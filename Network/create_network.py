@@ -19,7 +19,7 @@ collection = mydb["pubmed_2015_cleaned"]
 start_covid = datetime(2020,1,1)
 start_date = datetime(2015,1,1)
 start_date_year = start_date.year
-last_date = datetime(2021,12,31)
+last_date = datetime(2022,12,31)
 last_date_year = last_date.year
 
 n_month_after_covid = (last_date.year - start_covid.year) * 12 + (last_date.month - start_covid.month) + (last_date.day - start_covid.day)/30
