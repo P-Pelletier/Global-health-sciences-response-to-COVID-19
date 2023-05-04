@@ -11,7 +11,6 @@ import json
 
 
 
-
 class Clean_infos:
     
     def __init__(self,db_name,coll_name,coll_name_clean):
@@ -143,15 +142,16 @@ class Clean_infos:
             except :
                 output = None
         
-            if output is not None and len(output) > 0:
-                if output[0]==list(output[0]):
-                    country = output[0][1]
-                else:
-                    country = output[1]
-                loc_i = {"country":country}
-                
-                if loc_i is not None:
-                    return loc_i
+            if output is not None: 
+                if len(output) > 0:
+                    if output[0]==list(output[0]):
+                        country = output[0][1]
+                    else:
+                        country = output[1]
+                    loc_i = {"country":country}
+                    
+                    if loc_i is not None:
+                        return loc_i
         except:
             print('NON')
         
@@ -245,7 +245,41 @@ class Clean_infos:
             binary, 1 if there is a match between lexic from PMC Europe and meshwords abstract or title, 0 otherwise.
 
         """
-        text = str(paper['title']).lower() + str(paper['abstract']).lower() + str(paper['meshwords']).lower()
+
+        abstract = paper['abstract']
+        try:
+            if abstract is not None:
+                if isinstance(abstract, str):
+                    pass
+                else:
+                    if "#text" in abstract:
+                        abstract = abstract["#text"]
+                    elif "#text" in abstract[0]:
+                        abstract = abstract[0]["#text"]
+                    else:
+                        done = False
+                        for i in abstract:
+                            if "@Label" in i and done == False:
+                                if i["@Label"] == "ABSTRACT":
+                                    abstract = i["#text"]
+                                    done = True
+                            if i["@NlmCategory"] == "OBJECTIVE" and "#text" in i and done == False:
+                                abstract = i["#text"]
+                                done = True
+                        if done == False:
+                            abstract = ""
+            else:
+                abstract = ''
+        except:
+            abstract = ''
+
+                
+        if paper['meshwords'] and paper['title'] and paper['abstract'] :
+            text = str(paper['title']).lower() + " " + abstract.lower() + " " + " " + str(" ".join(paper['meshwords'])).lower()
+        elif paper['title'] and paper['abstract']:
+            text = text = str(paper['title']).lower() + " " + abstract.lower()
+        else:
+            text = ""
         is_in_text = any([any(re.search(w,text) for w in [i.lower() for i in ["2019-nCoV","2019nCoV","COVID-19","SARS-CoV-2","COVID19","COVID",
         "SARS-nCoV","Coronavirus","Corona virus","corona-virus","corona viruses",
         "coronaviruses","SARS-CoV","Orthocoronavirina","MERS-CoV",
@@ -369,7 +403,7 @@ class Clean_infos:
         covid_paper = self.is_covid(paper)
         loc_cities, team_size, share_captured, inter_collab, countries = self.get_query_by_doc(paper,
                      aff_split = 'affil str',
-                     aut_split = 'name ml')
+                     aut_split = 'names ml')
         eu_loc = self.is_eu(countries)
         newvalues = {
             "team_size":team_size,
@@ -404,31 +438,34 @@ class Clean_infos:
         
         df = [paper for paper in tqdm.tqdm(df[from_:to_])]
         for paper in tqdm.tqdm(df):
-            if paper['unix_received'] is not None and all([paper['pmid'] not in pmid_clean,paper['unix_received']> 1420070400]):
-                try:
-                    query, newvalues = self.set_new_values(paper)
-                    if  paper['doi'] is not None: 
-                        """
-                        try:
-                            infs = self.works.doi(paper['doi'])
-                            infs = {str(key):infs[key] for key in ['is-referenced-by-count',
-                                                                   'reference-count',
-                                                                   'created',
-                                                                   'author']}
-                            newvalues.update(infs)
-                            to_change, paper = self.is_to_update(paper)
-                            if to_change:
-                                query, newvalues2 = self.set_new_values(paper)
-                                paper.update(newvalues2)
-                        except:
-                            print('No crossref info')
-                        """
-                        paper.update(newvalues)
-                        paper.update(self.get_loc_list(paper))
-                        self.collection_clean.insert_one(paper)
-                        
-                except Exception as e:
-                    print("427",str(e))
+            if paper['unix_received'] is not None :
+                if all([paper['pmid'] not in pmid_clean,paper['unix_received']> 1420070400]):
+                    try:
+                        if paper["authors"] is not None:
+                            query, newvalues = self.set_new_values(paper)
+                            if  paper['doi'] is not None: 
+                                """
+                                try:
+                                    infs = self.works.doi(paper['doi'])
+                                    infs = {str(key):infs[key] for key in ['is-referenced-by-count',
+                                                                           'reference-count',
+                                                                           'created',
+                                                                           'author']}
+                                    newvalues.update(infs)
+                                    to_change, paper = self.is_to_update(paper)
+                                    if to_change:
+                                        query, newvalues2 = self.set_new_values(paper)
+                                        paper.update(newvalues2)
+                                except:
+                                    print('No crossref info')
+                                """
+                                paper.update(newvalues)
+                                paper.update(self.get_loc_list(paper))
+                                self.collection_clean.insert_one(paper)                            
+                    except Exception as e:
+                        print(paper)
+                        print("427",str(e))
+                        break
         
             
 
@@ -441,17 +478,20 @@ class Clean_infos:
         for doc in tqdm.tqdm(df):
             try:
                 if 'unix_received' in doc.keys() and doc['unix_received'] is not None and doc['unix_received']> 1420070400:
-                    df_list.append(doc)
-            except:
+                    if len(doc["meshwords"]) != 0 or len(doc["meshsubwords"]) != 0:
+                        df_list.append(doc)
+            except Exception as e:
+                print("428",str(e))
                 pass
-        df = pd.DataFrame(df_list)
-        medline_issn = df[(pd.notnull(df['meshwords'])) & (df['meshwords'] != '')]['ISSN'].tolist()
-        pmid_medline_list = df['pmid'][df['ISSN'].isin(medline_issn)].tolist()
-        
-        docs = self.collection_clean.find()
-        for doc in tqdm.tqdm(docs):
-            if doc["pmid"] not in pmid_medline_list:
-                self.collection_clean.delete_one({'pmid': doc["pmid"]})
+        if df_list:
+            df = pd.DataFrame(df_list)
+            medline_issn = df['ISSN'].tolist()
+            pmid_medline_list = df['pmid'][df['ISSN'].isin(medline_issn)].tolist()
+            
+            docs = self.collection_clean.find()
+            for doc in tqdm.tqdm(docs):
+                if doc["pmid"] not in pmid_medline_list:
+                    self.collection_clean.delete_one({'pmid': doc["pmid"]})
     
     def clean_doi(self):
         """
@@ -551,13 +591,12 @@ def clean_prettify(txt):
     txt = re.sub(r'  +', ' ', txt)
     return(txt)
 
-def date2unix(date):
-    year = date.split(",")[0].split(" ")[-1]
-    month = date.split(",")[1].split(" ")[-1]
-    day = date.split(",")[2].split(" ")[-1]
+def date2unix(day,month,year):
     s = "/".join([day,month,year])
-    
-    unix = time.mktime(datetime.datetime.strptime(s, "%d/%m/%Y").timetuple())
+    try:
+        unix = time.mktime(datetime.datetime.strptime(s, "%d/%m/%Y").timetuple())
+    except:
+        unix = None
     return unix
 
 def get_next_braces(text,starting_pos = 0):
@@ -702,3 +741,86 @@ def get_info(text,id_text):
     
     return(abstract,mesh_words,mesh_subwords,all_authors,date,date_received,\
            date_accepted,date_medline,title,source,grant,doi,ISSN,unix,unix_received,unix_accepted,unix_medline)
+        
+
+        
+def get_info_new(text,id_text):
+
+    try:
+        abstract = text['MedlineCitation']["Article"]['Abstract']["AbstractText"]
+    except:
+        abstract = None
+
+    try:
+        mesh_words = []
+        mesh_subwords = []
+        meshterms =  text['MedlineCitation']["MeshHeadingList"]["MeshHeading"]
+        for meshterm in meshterms:
+            if "DescriptorName" in meshterm:
+                temp_ = meshterm["DescriptorName"]
+            else:
+                temp_ = meshterm["QualifierName"]
+            if temp_["@MajorTopicYN"] == "Y":
+                mesh_words.append(temp_["#text"])
+            else:
+                mesh_subwords.append(temp_["#text"])
+            
+    except:
+        mesh_words = None
+        mesh_subwords = None
+
+    
+
+    authors =  text['MedlineCitation']["Article"]['AuthorList']["Author"]
+    all_authors = []
+    try:
+        for author in authors:
+            name_author = author["LastName"] + " " + author["ForeName"]
+            affiliation = author["AffiliationInfo"]["Affiliation"]
+            author_info = "names ml {}, affil str {}".format(name_author, affiliation)
+            all_authors.append(author_info)
+        all_authors = "\n".join(all_authors)
+    except:
+        all_authors = None
+
+    unix_received = None
+    unix_accepted = None
+    unix_medline = None
+    unix = None
+    year = None    
+    for i in text['PubmedData']["History"]["PubMedPubDate"]:
+
+        if i["@PubStatus"] == "received":
+            unix_received = date2unix(i["Day"],i["Month"],i["Year"])
+        if i["@PubStatus"] == "accepted":
+            unix_accepted = date2unix(i["Day"],i["Month"],i["Year"])
+        if i["@PubStatus"] == "medline":
+            unix_medline = date2unix(i["Day"],i["Month"],i["Year"])
+        if i["@PubStatus"] == "pubmed":
+            unix_medline = date2unix(i["Day"],i["Month"],i["Year"])
+            year = int(i["Year"])     
+    try:
+        title = text['MedlineCitation']["Article"]['ArticleTitle']
+    except:
+        title = None
+    try:
+        if isinstance(list(text['MedlineCitation']["Article"]["GrantList"]["Grant"])[0],str):
+            grant = text['MedlineCitation']["Article"]["GrantList"]["Grant"]
+        else:
+            grant = list(text['MedlineCitation']["Article"]["GrantList"]["Grant"])
+    except:
+        grant = None
+        
+    try:
+        doi = None
+        for i in text['PubmedData']["ArticleIdList"]["ArticleId"]:
+            if i["@IdType"] == "doi":
+                doi = i["#text"]
+    except:
+        doi = None
+    try:
+        ISSN = text['MedlineCitation']["Article"]["Journal"]["ISSN"]["#text"]
+    except:
+        ISSN = None
+    
+    return(abstract,mesh_words,mesh_subwords,all_authors,title,grant,doi,ISSN,unix,unix_received,unix_accepted,unix_medline,year)
