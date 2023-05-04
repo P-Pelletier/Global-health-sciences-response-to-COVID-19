@@ -7,8 +7,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 client = pymongo.MongoClient('mongodb://localhost:27017/')
-db = client['pubmed_cleaned2019']
-collection = db['pubmed_cleaned']
+db = client['pubmed']
+collection = db['pubmed_2019_cleaned']
 
 data = collection.find()
 dist =[{'unix_received':i['unix_received'],
@@ -42,7 +42,7 @@ def show_distplots2(year,variable):
     fig.legend(labels=['Non Coronavirus','Coronavirus'])
     plt.title(variable+' '+year)
     plt.show()
-    fig.savefig('C:/Users/pierre/Documents/GitHub/Global-health-sciences-response-to-COVID-19/Results/'+variable+year+'.png',
+    fig.savefig('Results/'+variable+year+'.png',
                 dpi=fig.dpi)
 
 def closest_to(dist,value):
@@ -72,7 +72,7 @@ def show_distplots(year,variable):
                        "90 percentiles corona :{}".format(str(value_c))])
     plt.title(variable+' '+year)
     plt.show()
-    fig.savefig('C:/Users/pierre/Documents/GitHub/Global-health-sciences-response-to-COVID-19/Results/'+variable+year+'.png',
+    fig.savefig('Results/'+variable+year+'.png',
                 dpi=fig.dpi)
 
 

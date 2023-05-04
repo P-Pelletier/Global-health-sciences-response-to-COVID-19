@@ -40,8 +40,8 @@ sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],month
 oma2 <- c(0.3,0,0,0)
 
 
-dataa$months_number = c(1:39)
-datac$months_number = c(1:39)
+dataa$months_number = c(1:length(months))
+datac$months_number = c(1:length(months))
 
 #figa
 
@@ -117,7 +117,7 @@ sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],month
                         labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021"))##, "May 2022" )) 
 
 # margin size
-datac$months_number = c(1:39)
+datac$months_number = c(1:length(months))
 
 figc = ggplot(datac) + 
   geom_ribbon(aes(x=months_number,ymin=LCI, ymax=UCI,fill="Tau", group = 1), 
@@ -167,7 +167,7 @@ table(sample$nodeActivity$month)
 
 ########## calculate s-cores ###########
 months <- sort(unique(sample$nodeActivity$month))
-months <- c(201901:201912,202001:202012,202101:202112,202201:202203)
+months <- c(201901:201912,202001:202012,202101:202112,202201:202212)
 sCore <- matrix(NA, nrow=nrow(sample$nodelist), ncol=length(months))
 rownames(sCore) <- sample$nodelist$countryCode
 colnames(sCore) <- as.character(months)
