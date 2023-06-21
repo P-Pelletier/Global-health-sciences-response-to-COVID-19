@@ -818,7 +818,7 @@ def get_info_new(text,id_text):
                     author_info = "names ml {}, affil str {}".format(name_author, new_affiliation)
                 except Exception as e:
                     author_info =  "names ml {}".format(name_author)
-                    print("418",id_text,str(e))
+                    #print("418",id_text,str(e))
                 all_authors.append(author_info)
             all_authors = "\n".join(all_authors)
         else:
@@ -838,12 +838,12 @@ def get_info_new(text,id_text):
                 author_info = "names ml {}, affil str {}".format(name_author, new_affiliation)
             except Exception as e:
                 author_info =  "names ml {}".format(name_author)
-                print("419",id_text,str(e))
+                #print("419",id_text,str(e))
             all_authors.append(author_info)
             all_authors = "\n".join(all_authors)
     except Exception as e:
         all_authors = None
-        print("420",id_text,str(e))
+        #print("420",id_text,str(e))
 
     unix_received = None
     unix_accepted = None
