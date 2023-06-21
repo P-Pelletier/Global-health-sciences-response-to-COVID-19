@@ -32,7 +32,7 @@ client = pymongo.MongoClient("mongodb://localhost:27017")
 mydb = client["pubmed"]
 collection = mydb["all"]
 
-all_ids="30704076,1"
+all_ids="108035,1"
 {'pmid': 25537518}
 
 def inf_dl(collection,start_at = None):

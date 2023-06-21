@@ -801,7 +801,28 @@ def get_info_new(text,id_text):
     authors =  text['MedlineCitation']["Article"]['AuthorList']["Author"]
     all_authors = []
     try:
-        for author in authors:
+        if type(authors) == list:
+            for author in authors:
+                name_author = author["LastName"] + " " + author["ForeName"]
+                try:
+                    affiliation = author["AffiliationInfo"]
+                    # Que la prems
+                    if type(affiliation) == list:
+                        new_affiliation = affiliation[0]["Affiliation"]
+                    #if type(affiliation) == list:
+                    #    new_affiliation = ""
+                    #    for aff in affiliation:
+                    #        new_affiliation += aff["Affiliation"] + " "
+                    else:
+                        new_affiliation = affiliation["Affiliation"]
+                    author_info = "names ml {}, affil str {}".format(name_author, new_affiliation)
+                except Exception as e:
+                    author_info =  "names ml {}".format(name_author)
+                    print("418",id_text,str(e))
+                all_authors.append(author_info)
+            all_authors = "\n".join(all_authors)
+        else:
+            author = authors
             name_author = author["LastName"] + " " + author["ForeName"]
             try:
                 affiliation = author["AffiliationInfo"]
@@ -817,12 +838,12 @@ def get_info_new(text,id_text):
                 author_info = "names ml {}, affil str {}".format(name_author, new_affiliation)
             except Exception as e:
                 author_info =  "names ml {}".format(name_author)
-                print(str(e))
+                print("419",id_text,str(e))
             all_authors.append(author_info)
-        all_authors = "\n".join(all_authors)
+            all_authors = "\n".join(all_authors)
     except Exception as e:
         all_authors = None
-        print(str(e))
+        print("420",id_text,str(e))
 
     unix_received = None
     unix_accepted = None
