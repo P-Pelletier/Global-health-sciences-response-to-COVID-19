@@ -11,7 +11,7 @@ mydb = client["pubmed"]
 collection = mydb["pubmed_2015_cleaned"]
 collection_OA = mydb["OpenAlex"]
 session = client.start_session()
-docs = collection.find(no_cursor_timeout=True, session = session).skip(2082613+28974)
+docs = collection.find(no_cursor_timeout=True, session = session).skip(2448108)
 
 
 
@@ -39,4 +39,4 @@ for doc in tqdm.tqdm(docs):
 
 
 
-to_insert
+

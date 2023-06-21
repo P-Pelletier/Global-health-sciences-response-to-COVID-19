@@ -7,10 +7,12 @@ from Downloads.utils import Clean_infos
 #parser.add_argument('-to_')
 #args = parser.parse_args()
 
-data = Clean_infos('pubmed','all','pubmed_2015_cleaned')
+data = Clean_infos('pubmed','all','pubmed_cleaned')
+#data.clean_abstract()
+#'pmid': 35291963
 #data.update_db(int(args.from_),int(args.to_))
-data.update_db(int(30000000),int(35000000))
-    
+#data.update_db()
+
 
     
 data.restrict_medline()
@@ -24,6 +26,6 @@ collection = db["all"]
 
 
 doc = collection.find_one({"pmid":36869612})
-
+{pmid:31712091}
 collection.delete_many({"meshwords":{"$exists":0}})
 """

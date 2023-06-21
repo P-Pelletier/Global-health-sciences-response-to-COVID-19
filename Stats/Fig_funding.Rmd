@@ -1,0 +1,93 @@
+---
+title: 'Fig1'
+author: "Kevin Wirtz (kevin.wirtz@unistra.fr)"
+date: "Updated `r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_notebook:
+    code_folding: hide
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+
+rm(list = ls(all.names = TRUE)) #will clear all objects includes hidden objects.
+gc() #free up memrory and report the memory usage.
+graphics.off()
+
+Sys.setenv(LANG = "en") # For english language
+options(scipen = 5) # To deactivate annoying scientific number notation
+library(magrittr) # For extra-piping operators (eg. %<>%)
+library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
+library(cowplot)
+library(ggpubr)
+library(magick)
+```
+
+# Fig1: #### International
+```{r} 
+
+df <- read_csv("../Data/fig_funding.csv")
+
+oma2 <- c(0.3,0,0,0.3)
+
+custom_theme = theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title.x = element_text(size = 12),
+      axis.title.y = element_text(size = 12),
+      panel.border = element_rect(colour = "black", fill=NA, size=1),
+      plot.margin = unit(oma2, "cm"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      legend.key=element_blank(),
+      legend.title=element_blank(),
+      legend.position="top",
+      legend.text=element_text(size = 12)) 
+
+
+```
+
+```{r} 
+
+
+fig1_a = ggplot(df, aes(x = date, y = log(n_papers), color = type)) + 
+  geom_line(linewidth = 1.25) +
+  scale_color_manual(values = c("#1f77b4", "#ff7f0e")) +
+  labs(x = "Year",
+         y = "Log Number of paper",
+         color = "Legend") +
+  custom_theme
+
+fig1_a
+
+filename <- "../Results/plots/Figfunding_a.pdf"
+pdf(file=filename, width=8, height=3, family="Helvetica", pointsize=6)
+fig1_a
+dev.off()
+
+```
+
+```{r} 
+
+
+fig1_b = ggplot(df, aes(x = date, y = n_paper_with_grant/n_papers, color = type)) + 
+  geom_line(linewidth = 1.25) +
+  scale_color_manual(values = c("#1f77b4", "#ff7f0e")) +
+  labs(x = "Year",
+         y = "Log Number of paper",
+         color = "Legend") +
+  custom_theme
+
+fig1_b
+
+filename <- "../Results/plots/Figfunding_b.pdf"
+pdf(file=filename, width=8, height=3, family="Helvetica", pointsize=6)
+fig1_b
+dev.off()
+
+```

@@ -8,8 +8,13 @@ import csv
 from crossref.restful import Works
 import pandas as pd
 import json
+from collections import defaultdict
 
 
+client = pymongo.MongoClient('mongodb://localhost:27017')
+db = client['pubmed']
+collection = db["all"]
+doc = collection.find_one({"pmid":30717342})
 
 class Clean_infos:
     
@@ -229,7 +234,7 @@ class Clean_infos:
         except:
             share = 0
         return authors_info_cities, n, share , inter_collab, country
-    
+        
     def is_covid(self,paper):
         """
         Is covid base on PMC europe query
@@ -246,40 +251,18 @@ class Clean_infos:
 
         """
 
-        abstract = paper['abstract']
-        try:
-            if abstract is not None:
-                if isinstance(abstract, str):
-                    pass
-                else:
-                    if "#text" in abstract:
-                        abstract = abstract["#text"]
-                    elif "#text" in abstract[0]:
-                        abstract = abstract[0]["#text"]
-                    else:
-                        done = False
-                        for i in abstract:
-                            if "@Label" in i and done == False:
-                                if i["@Label"] == "ABSTRACT":
-                                    abstract = i["#text"]
-                                    done = True
-                            if i["@NlmCategory"] == "OBJECTIVE" and "#text" in i and done == False:
-                                abstract = i["#text"]
-                                done = True
-                        if done == False:
-                            abstract = ""
-            else:
-                abstract = ''
-        except:
-            abstract = ''
 
                 
-        if paper['meshwords'] and paper['title'] and paper['abstract'] :
-            text = str(paper['title']).lower() + " " + abstract.lower() + " " + " " + str(" ".join(paper['meshwords'])).lower()
-        elif paper['title'] and paper['abstract']:
-            text = text = str(paper['title']).lower() + " " + abstract.lower()
+        if paper['title']:
+            text = str(paper['title']).lower() 
+            text = paper["abstract"].lower() 
         else:
             text = ""
+        if not paper['meshwords']:
+           paper['meshwords'] = [] 
+        if not paper['meshsubwords']:
+           paper['meshsubwords'] = [] 
+        text +=  paper["abstract"].lower() + str(" ".join(paper['meshwords'])).lower() + str(" ".join(paper['meshsubwords'])).lower()
         is_in_text = any([any(re.search(w,text) for w in [i.lower() for i in ["2019-nCoV","2019nCoV","COVID-19","SARS-CoV-2","COVID19","COVID",
         "SARS-nCoV","Coronavirus","Corona virus","corona-virus","corona viruses",
         "coronaviruses","SARS-CoV","Orthocoronavirina","MERS-CoV",
@@ -327,7 +310,7 @@ class Clean_infos:
     
     
         
-    def get_loc_list(self,paper):
+    def get_loc_list(self,Location_cities_country):
         """
         Get loc list after all update
 
@@ -344,15 +327,11 @@ class Clean_infos:
         """
         try:
             country = []
-            for aut in paper['Location_cities_country']:
-                if paper['Location_cities_country'][aut]['country'] is not None:
-                    country.append(paper['Location_cities_country'][aut]['country'])
+            for aut in Location_cities_country:
+                if Location_cities_country[aut]['country'] is not None:
+                    country.append(Location_cities_country[aut]['country'])
             country = list(set(country))
-            newvalues = {
-                "nb_country":len(country),
-                "country_list": ';'.join(country),
-                }
-            return newvalues
+            return len(country), ';'.join(country)
         except:
             pass
            
@@ -399,24 +378,27 @@ class Clean_infos:
             new values to update in mongodb.
 
         """
-        query = { "_id": paper['_id'] }
+
         covid_paper = self.is_covid(paper)
         loc_cities, team_size, share_captured, inter_collab, countries = self.get_query_by_doc(paper,
                      aff_split = 'affil str',
                      aut_split = 'names ml')
         eu_loc = self.is_eu(countries)
+        nb_country, country_list = self.get_loc_list(loc_cities)
         newvalues = {
             "team_size":team_size,
             "Location_cities_country": loc_cities,
             "share_aff_captured": share_captured,
             "is_eu":eu_loc,
             "inter_collab":inter_collab,
-            "is_coronavirus_lower": covid_paper
+            "is_coronavirus_lower": covid_paper,
+            "nb_country":nb_country,
+            "country_list":country_list
             }
-        return query, newvalues
+        return newvalues
         
     
-    def update_db(self,from_,to_):
+    def update_db(self,from_=None,to_=None):
         """
          Clean db and update 
 
@@ -433,65 +415,78 @@ class Clean_infos:
 
         """
         
-        df = self.collection.find({},no_cursor_timeout=True)
-        pmid_clean = [i['pmid'] for i in self.collection_clean.find()]
-        
-        df = [paper for paper in tqdm.tqdm(df[from_:to_])]
-        for paper in tqdm.tqdm(df):
-            if paper['unix_received'] is not None :
-                if all([paper['pmid'] not in pmid_clean,paper['unix_received']> 1420070400]):
-                    try:
-                        if paper["authors"] is not None:
-                            query, newvalues = self.set_new_values(paper)
-                            if  paper['doi'] is not None: 
-                                """
-                                try:
-                                    infs = self.works.doi(paper['doi'])
-                                    infs = {str(key):infs[key] for key in ['is-referenced-by-count',
-                                                                           'reference-count',
-                                                                           'created',
-                                                                           'author']}
-                                    newvalues.update(infs)
-                                    to_change, paper = self.is_to_update(paper)
-                                    if to_change:
-                                        query, newvalues2 = self.set_new_values(paper)
-                                        paper.update(newvalues2)
-                                except:
-                                    print('No crossref info')
-                                """
-                                paper.update(newvalues)
-                                paper.update(self.get_loc_list(paper))
-                                self.collection_clean.insert_one(paper)                            
-                    except Exception as e:
-                        print(paper)
-                        print("427",str(e))
-                        break
+        docs = self.collection.find({},no_cursor_timeout=True)
+
+        list_of_insertion = []
+        pass_ = False
+        for paper in tqdm.tqdm(docs):
+            if paper["pmid"] == 35291960:
+                pass_ = True
+                continue
+            if pass_ == False:
+                continue
+            if "unix_received" not in paper:
+                continue
+            if paper['unix_received'] == None :
+                continue
+            try:
+                if paper["authors"] == None:
+                    continue
+                if paper['doi'] == None:
+                    continue
+                """
+                try:
+                    infs = self.works.doi(paper['doi'])
+                    infs = {str(key):infs[key] for key in ['is-referenced-by-count',
+                                                           'reference-count',
+                                                           'created',
+                                                           'author']}
+                    newvalues.update(infs)
+                    to_change, paper = self.is_to_update(paper)
+                    if to_change:
+                        query, newvalues2 = self.set_new_values(paper)
+                        paper.update(newvalues2)
+                except:
+                    print('No crossref info')
+                """
+                newvalues = self.set_new_values(paper)
+                paper.update(newvalues)
+                list_of_insertion.append(paper)
+                if len(list_of_insertion) == 20000:
+                    self.collection_clean.insert_many(list_of_insertion)     
+                    list_of_insertion = []
+            except Exception as e:
+                print(paper)
+                print("427",str(e))
+                break
+        self.collection_clean.insert_many(list_of_insertion)    
         
             
+                
 
     def restrict_medline(self):
         """
         Export a pmid list restricted on MEDLINE documents 
         """
         df = self.collection_clean.find()
-        df_list = []
+        ISSN_list = defaultdict(int)
         for doc in tqdm.tqdm(df):
             try:
-                if 'unix_received' in doc.keys() and doc['unix_received'] is not None and doc['unix_received']> 1420070400:
+                if 'unix_received' in doc and doc['unix_received'] is not None : 
                     if len(doc["meshwords"]) != 0 or len(doc["meshsubwords"]) != 0:
-                        df_list.append(doc)
+                        if "ISSN" in doc:
+                            if doc["ISSN"] != None and doc["ISSN"] != "":
+                                ISSN_list[doc['ISSN']] += 1
             except Exception as e:
+                print(doc["pmid"])
                 print("428",str(e))
-                pass
-        if df_list:
-            df = pd.DataFrame(df_list)
-            medline_issn = df['ISSN'].tolist()
-            pmid_medline_list = df['pmid'][df['ISSN'].isin(medline_issn)].tolist()
-            
-            docs = self.collection_clean.find()
-            for doc in tqdm.tqdm(docs):
-                if doc["pmid"] not in pmid_medline_list:
-                    self.collection_clean.delete_one({'pmid': doc["pmid"]})
+
+        ISSN_list = dict(ISSN_list)
+
+        docs = self.collection_clean.find()
+        for doc in tqdm.tqdm(docs):
+            if doc['ISSN'] not in ISSN_list:
+                self.collection_clean.delete_one({'pmid': doc["pmid"]})
     
     def clean_doi(self):
         """
@@ -529,7 +524,7 @@ class Clean_infos:
         df_list = []
         for doc in tqdm.tqdm(df):
             try:
-                if 'unix_received' in doc.keys() and doc['unix_received'] is not None and doc['unix_received']> 1420070400:
+                if 'unix_received' in doc.keys() and doc['unix_received'] is not None:# and doc['unix_received']> 1420070400:
                     doc.pop('_id')
                     df_list.append(doc)
             except:
@@ -578,6 +573,38 @@ class Clean_infos:
                 continue
             self.collection_clean.update_one({'pmid':doc["pmid"]},{"$set":{'wos_cat':cat}},upsert=False)
 
+    def clean_abstract(self):
+        docs = self.collection.find({},no_cursor_timeout=True)
+        
+        list_of_insertion = []
+        for doc in tqdm.tqdm(docs):
+            try:
+                if "abstract" in doc:
+                    abstract = doc['abstract']
+                    try:
+                        if abstract is not None:
+                            if isinstance(abstract, str):
+                                pass
+                            else:
+                                if "#text" in abstract:
+                                    abstract = abstract["#text"]
+                                elif "#text" in abstract[0]:
+                                    abstract = abstract[0]["#text"]
+                        else:
+                            abstract = ''
+                    except:
+                        abstract = ''
+                
+                    list_of_insertion.append(pymongo.UpdateOne({"pmid": doc["pmid"]},
+                                                       {'$set': {"abstract": abstract}},
+                                                       upsert = False))
+                    if len(list_of_insertion) == 50000:
+                        self.collection.bulk_write(list_of_insertion)
+                        list_of_insertion = []
+            except:
+                continue
+        self.collection.bulk_write(list_of_insertion)
+        
 ####♥
 
 def clean_prettify(txt):
@@ -776,12 +803,26 @@ def get_info_new(text,id_text):
     try:
         for author in authors:
             name_author = author["LastName"] + " " + author["ForeName"]
-            affiliation = author["AffiliationInfo"]["Affiliation"]
-            author_info = "names ml {}, affil str {}".format(name_author, affiliation)
+            try:
+                affiliation = author["AffiliationInfo"]
+                # Que la prems
+                if type(affiliation) == list:
+                    new_affiliation = affiliation[0]["Affiliation"]
+                #if type(affiliation) == list:
+                #    new_affiliation = ""
+                #    for aff in affiliation:
+                #        new_affiliation += aff["Affiliation"] + " "
+                else:
+                    new_affiliation = affiliation["Affiliation"]
+                author_info = "names ml {}, affil str {}".format(name_author, new_affiliation)
+            except Exception as e:
+                author_info =  "names ml {}".format(name_author)
+                print(str(e))
             all_authors.append(author_info)
         all_authors = "\n".join(all_authors)
-    except:
+    except Exception as e:
         all_authors = None
+        print(str(e))
 
     unix_received = None
     unix_accepted = None
