@@ -42,7 +42,7 @@ class Clean_infos:
         self.db = client[db_name]
         self.collection = self.db[coll_name]
         self.collection_clean = self.db[coll_name_clean]
-        self.df = self.collection.find()
+        self.df = self.collection.find({},no_cursor_timeout=True)
         csv_f = open(r'Data/cleaned_cities_loc.csv','r', encoding='utf-8')
         self.works = Works()
         self.cities = [i for i in  csv.reader(csv_f)]
@@ -252,17 +252,18 @@ class Clean_infos:
         """
 
 
-                
+                        
         if paper['title']:
             text = str(paper['title']).lower() 
-            text = paper["abstract"].lower() 
         else:
             text = ""
+        if paper["abstract"]:
+            text += str(paper['abstract']).lower()
         if not paper['meshwords']:
            paper['meshwords'] = [] 
         if not paper['meshsubwords']:
            paper['meshsubwords'] = [] 
-        text +=  paper["abstract"].lower() + str(" ".join(paper['meshwords'])).lower() + str(" ".join(paper['meshsubwords'])).lower()
+        text +=  str(" ".join(paper['meshwords'])).lower() + str(" ".join(paper['meshsubwords'])).lower()
         is_in_text = any([any(re.search(w,text) for w in [i.lower() for i in ["2019-nCoV","2019nCoV","COVID-19","SARS-CoV-2","COVID19","COVID",
         "SARS-nCoV","Coronavirus","Corona virus","corona-virus","corona viruses",
         "coronaviruses","SARS-CoV","Orthocoronavirina","MERS-CoV",
@@ -468,7 +469,7 @@ class Clean_infos:
         """
         Export a pmid list restricted on MEDLINE documents 
         """
-        df = self.collection_clean.find()
+        df = self.collection_clean.find({},no_cursor_timeout=True)
         ISSN_list = defaultdict(int)
         for doc in tqdm.tqdm(df):
             try:
@@ -483,7 +484,7 @@ class Clean_infos:
 
         ISSN_list = dict(ISSN_list)
 
-        docs = self.collection_clean.find()
+        docs = self.collection_clean.find({},no_cursor_timeout=True)
         for doc in tqdm.tqdm(docs):
             if doc['ISSN'] not in ISSN_list:
                 self.collection_clean.delete_one({'pmid': doc["pmid"]})
@@ -520,7 +521,7 @@ class Clean_infos:
         """
         Export clean data
         """
-        df = self.collection_clean.find()
+        df = self.collection_clean.find({},no_cursor_timeout=True)
         df_list = []
         for doc in tqdm.tqdm(df):
             try:
@@ -536,7 +537,7 @@ class Clean_infos:
         # unique issn
 
         issn_list = []
-        docs =  self.collection_clean.find()
+        docs =  self.collection_clean.find({},no_cursor_timeout=True)
         n = 0
         for doc in tqdm.tqdm(docs):
             issn_list.append(doc["ISSN"])
