@@ -18,9 +18,9 @@ for country in pycountry.countries:
 
 client = pymongo.MongoClient("mongodb://localhost:27017")
 mydb = client["pubmed"]
-collection = mydb["pubmed_2015_cleaned"]
+collection = mydb["pubmed_cleaned"]
 
-start_date = datetime(2015,1,1)
+start_date = datetime(2019,1,1)
 start_covid = datetime(2020,1,1)
 last_date = datetime(2022,12,31)
 last_date_year = last_date.year
@@ -57,21 +57,6 @@ instance_others.populate_publication_dict()
 pub_data = instance_others.n_publication
 
 
-# Create corona pub dict
-
-instance_corona = Create_net(collection,{"$and":[{"is_coronavirus_lower":1}]},last_date = last_date, start_date = start_date)
-instance_corona.create_list_city(scale = "country")
-instance_corona.populate_publication_dict_full_count()
-pub_corona = instance_corona.n_publication_full_count
-time_period = instance_corona.time_period
-
-# Create others pub dict
-
-instance_others = Create_net(collection,{"$and":[{"is_coronavirus_lower":0}]},last_date = last_date, start_date = start_date)
-instance_others.create_list_city(scale = "country")
-instance_others.populate_publication_dict_full_count()
-pub_data = instance_others.n_publication_full_count
-
 # additionnal info of publications for others scripts
 
 add_corona =  instance_corona.n_publication_add
@@ -79,14 +64,10 @@ add_others =  instance_others.n_publication_add
 add_info = pd.DataFrame()
 
 for month in tqdm.tqdm(time_period):
-    add_corona[month].columns = ["solePubsCorona","collabPubsCorona"]    
+    add_corona[month].columns = ["solePubs", "solePubs_full_count","solo_author","collabPubs","collabPubs_full_count"]   
     test = pd.concat([add_others[month],add_corona[month]],axis=1)
     test.insert(0, 'month', month)
     add_info = add_info.append(test)
-
-n_publication_full_count = pd.DataFrame()
-n_publication_full_count.columns = ["pmid","country","n_author","year"]
-
 
 add_info['country'] = add_info.index
 add_info.to_csv("Data/Data_{}/country_pub_info.csv".format(str(last_date_year)), index=False)
@@ -107,7 +88,7 @@ publication.columns = ["n_pub","n_pub_corona"]
 
 for paper in tqdm.tqdm(papers):
     date = instance_others.get_unix(paper)
-    if int(date) <= instance_others.last_date and int(date) > instance_others.start_date:
+    if int(date) <= instance_others.last_date and int(date) >= instance_others.start_date:
         if paper["is_coronavirus_lower"] == 0:
             publication.at[date, "n_pub"] += 1
         else:
@@ -299,7 +280,7 @@ df_rank_corr.columns = ["Tau","LCI","UCI"]
 
 #figa
 
-dates = list(range(201501,201513,1))+list(range(201601,201613,1))+list(range(201701,201713,1))+list(range(201801,201813,1))+ list(range(201901,201913,1)) + list(range(202001,202013,1)) + list(range(202101,202113,1))+list(range(202201,202213,1))
+dates = list(range(201901,201913,1)) + list(range(202001,202013,1)) + list(range(202101,202113,1))+list(range(202201,202213,1))
 
 
 
@@ -333,12 +314,10 @@ df_rank_corr.to_csv("Data/Data_{}/fig1c.csv".format(str(last_date_year)), index=
 
 # n_pub
 
-
-
-publication.columns = ["non_Coronavirus","Coronavirus"]
 dates = ["Jan 2019", "Feb 2019", "Mar 2019", "Apr 2019", "May 2019", "Jun 2019", "Jul 2019", "Aug 2019", "Sep 2019", "Oct 2019", "Nov 2019", "Dec 2019",
          "Jan 2020", "Feb 2020", "Mar 2020", "Apr 2020", "May 2020", "Jun 2020", "Jul 2020", "Aug 2020", "Sep 2020", "Oct 2020", "Nov 2020","Dec 2020",
-         "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021"]
+         "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021", "Jun 2021", "Jul 2021", "Aug 2021", "Sep 2021", "Oct 2021", "Nov 2021","Dec 2021",
+         "Jan 2022", "Feb 2022", "Mar 2022", "Apr 2022", "May 2022", "Jun 2022", "Jul 2022", "Aug 2022", "Sep 2022", "Oct 2022", "Nov 2022","Dec 2022",]
 publication.index = dates
 publication['month'] = publication.index
 publication.to_csv("Data/Data_{}/fig1a.csv".format(str(last_date_year)), index=False)
@@ -417,7 +396,7 @@ df_barplot['country'] = df_barplot.index
 df_barplot.to_csv("Data/Data_{}/fig1b.csv".format(str(last_date_year)), index=False)
 
 
-df_barplot.columns = ["corona related pre covid", "corona related post covid"]
+df_barplot.columns = ["corona related pre covid", "corona related post covid","country"]
 df_barplot = df_barplot#.apply(np.log)
 labels = [countries.get(country, 'Unknown code') for country in top]
 

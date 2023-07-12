@@ -14,10 +14,10 @@ for country in pycountry.countries:
 
 client = pymongo.MongoClient('mongodb://Pierre:ilovebeta67@localhost:27017/')
 mydb = client["pubmed"]
-collection = mydb["pubmed_2015_cleaned"]
+collection = mydb["pubmed_cleaned"]
 
 start_covid = datetime(2020,1,1)
-start_date = datetime(2015,1,1)
+start_date = datetime(2019,1,1)
 start_date_year = start_date.year
 last_date = datetime(2022,12,31)
 last_date_year = last_date.year

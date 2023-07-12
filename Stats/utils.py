@@ -176,9 +176,9 @@ class Create_net:
         df.columns = ["n_pub"]
         self.n_publication = {key: df.copy() for key in self.time_period}
 
-        df_add = pd.DataFrame(np.zeros((len(self.city_country_list), 2)))
+        df_add = pd.DataFrame(np.zeros((len(self.city_country_list), 5)))
         df_add.index = self.city_country_list
-        df_add.columns = ["solePubs","collabPubs"]
+        df_add.columns = ["solePubs", "solePubs_full_count","solo_author","collabPubs","collabPubs_full_count"]
         self.n_publication_add = {key: df_add.copy() for key in self.time_period}        
 
         for paper in tqdm.tqdm(self.data):
@@ -208,51 +208,17 @@ class Create_net:
                     self.n_publication[date].at[loc, "n_pub"] += 1       
 
                 for loc in set(temp_list_country):
+                    if len(temp_list_country) == 1:
+                        self.n_publication_add[date].at[loc, "solo_author"] += 1 
                     if len(set(temp_list_country))>1:
                         self.n_publication_add[date].at[loc, "collabPubs"] += 1  
                     else:
                         self.n_publication_add[date].at[loc, "solePubs"] += 1 
-        
-    def populate_publication_dict_full_count(self):
-        '''
-        Parameters
-        ----------
+                    
 
-        Returns
-        -------
-        Different of publication by country for each month and type of research (type of research specified in query)
-        '''
-        
-        self.start_gen()
-
-        self.n_publication_full_count = pd.DataFrame(columns=["pmid","country","n_author","year"])
-        
-        for paper in tqdm.tqdm(self.data):
-            date = self.get_unix(paper)
-            if int(date) <= self.last_date and int(date) >= self.start_date:
-                # get list of country for each author 
-                temp_list_country = []
-                if self.scale == "city":
-                    for author in paper["Location_cities"]:
-                        city = paper["Location_cities"][author]["city"]
-                        country = paper["Location_cities"][author]["country"]
-                        if country in ["country","Eswatini","Kosovo","Micronesia"]:
-                            continue
-                        if city and country != None:
-                            loc = self.clean_loc(city + "_" + country)
-                            temp_list_country.append(loc)
-                else:
-                    for author in paper["Location_cities_country"]:
-                        country = paper["Location_cities_country"][author]["country"]
-                        if country in ["country","Eswatini","Kosovo","Micronesia"]:
-                            continue                        
-                        if country != None:
-                            loc = self.clean_loc(country)
-                            temp_list_country.append(loc)
-                
-                counter=collections.Counter(temp_list_country)
-                for country in counter:
-                    name = country
-                    freq = counter[country]    
-                    self.n_publication_full_count.loc[len(self.n_publication_full_count)] = [paper["pmid"],name,freq,date]
+                for loc in temp_list_country:
+                    if len(set(temp_list_country))>1:
+                        self.n_publication_add[date].at[loc, "collabPubs_full_count"] += len([i for i in temp_list_country if i != loc])
+                    else:
+                        self.n_publication_add[date].at[loc, "solePubs_full_count"] += len(temp_list_country)
 
