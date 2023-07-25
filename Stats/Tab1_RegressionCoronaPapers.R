@@ -18,7 +18,7 @@ library(sandwich) # for heteroskedasticity-robust standard errors
 
 ########## data handling ###########
 # read data
-sample <- read_data(path="Data/Data_2021")
+sample <- read_data(path="Data/Data_2022")
 
 
 # prepare data

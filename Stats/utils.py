@@ -160,6 +160,200 @@ class Create_net:
             pickle.dump( self.time_period, open( "Data/time_period.p", "wb" ) )
             pickle.dump( self.city_country_list, open( "Data/city_country_list.p", "wb" ) )
 
+    def pub_info(self, paper, date):
+        temp_list_country = []
+        if self.scale == "city":
+            for author in paper["Location_cities"]:
+                city = paper["Location_cities"][author]["city"]
+                country = paper["Location_cities"][author]["country"]
+                if country in ["country","Eswatini","Kosovo","Micronesia"]:
+                    continue
+                if city and country != None:
+                    loc = self.clean_loc(city + "_" + country)
+                    temp_list_country.append(loc)
+        else:
+            for author in paper["Location_cities_country"]:
+                country = paper["Location_cities_country"][author]["country"]
+                if country in ["country","Eswatini","Kosovo","Micronesia"]:
+                    continue                        
+                if country != None:
+                    loc = self.clean_loc(country)
+                    temp_list_country.append(loc)
+        
+        for loc in set(temp_list_country):
+            self.n_publication[date].at[loc, "n_pub"] += 1       
+
+        for loc in set(temp_list_country):
+            if len(temp_list_country) == 1:
+                self.n_publication_add[date].at[loc, "solo_author"] += 1 
+            if len(set(temp_list_country))>1:
+                self.n_publication_add[date].at[loc, "collabPubs"] += 1  
+            else:
+                self.n_publication_add[date].at[loc, "solePubs"] += 1 
+            
+
+        for loc in temp_list_country:
+            if len(set(temp_list_country))>1:
+                self.n_publication_add[date].at[loc, "collabPubs_full_count"] += len([i for i in temp_list_country if i != loc])
+            else:
+                self.n_publication_add[date].at[loc, "solePubs_full_count"] += len(temp_list_country)
+        
+        return(temp_list_country)
+    
+    def grant_info_depecrated(self, paper, date, temp_list_country):
+        if paper["grants"]:
+            if type(paper["grants"]) == dict:
+                grants = [paper["grants"]]
+            else:
+                grants = paper["grants"]    
+                
+            countries_funding = []
+            for grant in grants:
+                countries_funding.append(grant["Country"])
+            
+            countries_funding = [country for country in countries_funding if country != None]
+            
+            if countries_funding:
+            # Only one country funding                      
+                if len(set(countries_funding)) == 1:
+                    country_funder = list(set(countries_funding))[0]
+                    if len(set(temp_list_country)) == 1:
+                        country_funded = list(set(temp_list_country))[0]
+                        if country_funder == country_funded:
+                            #print("N_funding_solo",paper["pmid"])
+                            self.n_publication_add[date].at[country_funded, "N_funding_solo"] += 1
+                        elif country_funder == "International":
+                            self.n_publication_add[date].at[country_funded, "IAG_funding_solo"] += 1
+                            #print("IAG_funding_solo",paper["pmid"])
+                        else:
+                            self.n_publication_add[date].at[country_funded, "I_funding_solo"] += 1
+                            #print("I_funding_solo",paper["pmid"])
+                    else:
+                        for country_funded in list(set(temp_list_country)):
+                            if country_funder == country_funded:
+                                #print("N_funding_collab",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "N_funding_collab"] += 1
+                            elif country_funder == "International":
+                                #print("IAG_funding_collab",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "IAG_funding_collab"] += 1
+                            else:
+                                #print("I_funding_collab",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "I_funding_collab"] += 1                               
+                # Multiple country funding
+                else:
+                    countries_funder = list(set(countries_funding))
+                    if len(set(temp_list_country)) == 1:
+                        country_funded = list(set(temp_list_country))[0]
+                        if country_funded in countries_funder:
+                            if "International" in countries_funder and len(countries_funder) > 2:
+                                #print("N_I_IAG_funding_solo",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "N_I_IAG_funding_solo"] += 1
+                            elif "International" in countries_funder:
+                                #print("N_IAG_funding_solo",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "N_IAG_funding_solo"] += 1
+                            else:
+                                #print("N_I_funding_solo",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "N_I_funding_solo"] += 1 
+                        else:
+                            if "International" in countries_funder and len(countries_funder) >= 2:
+                                #print("I_IAG_funding_solo",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "I_IAG_funding_solo"] += 1
+                            elif "International" in countries_funder:
+                                #print("IAG_funding_solo",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "IAG_funding_solo"] += 1                    
+                            else:
+                                #print("I_funding_solo",paper["pmid"])
+                                self.n_publication_add[date].at[country_funded, "I_funding_solo"] += 1 
+                    else:
+                        for country_funded in list(set(temp_list_country)):
+                            if country_funded in countries_funder:
+                                if "International" in countries_funder and len(countries_funder) > 2:
+                                    #print("N_I_IAG_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funded, "N_I_IAG_funding_collab"] += 1
+                                elif "International" in countries_funder:
+                                    #print("N_IAG_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funded, "N_IAG_funding_collab"] += 1
+                                else:
+                                    #print("N_I_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funded, "N_I_funding_collab"] += 1 
+                            else:
+                                if "International" in countries_funder and len(countries_funder) >= 2:
+                                    #print("I_IAG_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funded, "I_IAG_funding_collab"] += 1
+                                elif "International" in countries_funder:
+                                    #print("IAG_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funded, "IAG_funding_collab"] += 1                    
+                                else:
+                                    #print("I_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funded, "I_funding_collab"] += 1         
+            else:
+                self.n_publication_add[date].at[country_funded, "No_grant"] += 1
+                            
+                
+    def grant_info_funder(self, paper, date, temp_list_country):
+        if paper["grants"]:
+            if type(paper["grants"]) == dict:
+                grants = [paper["grants"]]
+            else:
+                grants = paper["grants"]    
+                
+            countries_funding = []
+            for grant in grants:
+                countries_funding.append(grant["Country"])
+            
+            countries_funding = [country for country in countries_funding if country != None]
+            
+            if countries_funding:
+            # Only one country funding                      
+                if len(set(countries_funding)) == 1:
+                    country_funder = list(set(countries_funding))[0]
+                    if len(set(temp_list_country)) == 1:
+                        country_funded = list(set(temp_list_country))[0]
+                        if country_funder == country_funded:
+                            #print("N_funding_solo",paper["pmid"])
+                            self.n_publication_add[date].at[country_funder, "N_funding_solo"] += 1
+                            self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                    else:
+                        for country_funded in list(set(temp_list_country)):
+                            if country_funder == country_funded:
+                                #print("N_funding_collab",paper["pmid"])
+                                self.n_publication_add[date].at[country_funder, "N_funding_collab"] += 1
+                                self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                # Multiple country funding
+                else:
+                    countries_funder = list(set(countries_funding))
+                    for country_funder in countries_funder:
+                        if len(set(temp_list_country)) == 1:
+                            country_funded = list(set(temp_list_country))[0]
+                            if country_funded == country_funder:
+                                if "International" in countries_funder and len(countries_funder) > 2:
+                                    #print("N_I_IAG_funding_solo",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funder, "N_I_IAG_funding_solo"] += 1
+                                    self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                                elif "International" in countries_funder:
+                                    #print("N_IAG_funding_solo",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funder, "N_IAG_funding_solo"] += 1
+                                    self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                                else:
+                                    #print("N_I_funding_solo",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funder, "N_I_funding_solo"] += 1 
+                                    self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                        else:
+                            countries_funded = list(set(temp_list_country))
+                            if country_funder in countries_funded:
+                                if "International" in countries_funder and len(countries_funder) > 2:
+                                    #print("N_I_IAG_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funder, "N_I_IAG_funding_collab"] += 1
+                                    self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                                elif "International" in countries_funder:
+                                    #print("N_IAG_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funder, "N_IAG_funding_collab"] += 1
+                                    self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                                else:
+                                    #print("N_I_funding_collab",paper["pmid"])
+                                    self.n_publication_add[date].at[country_funder, "N_I_funding_collab"] += 1
+                                    self.n_publication_add[date].at[country_funder, "Total_funding"] += 1
+                                          
     def populate_publication_dict(self):
         '''
         Parameters
@@ -176,49 +370,25 @@ class Create_net:
         df.columns = ["n_pub"]
         self.n_publication = {key: df.copy() for key in self.time_period}
 
-        df_add = pd.DataFrame(np.zeros((len(self.city_country_list), 5)))
+        df_add = pd.DataFrame(np.zeros((len(self.city_country_list), 14)))
         df_add.index = self.city_country_list
-        df_add.columns = ["solePubs", "solePubs_full_count","solo_author","collabPubs","collabPubs_full_count"]
+        """
+        df_add.columns = ["solePubs", "solePubs_full_count","solo_author","collabPubs","collabPubs_full_count",
+                          "N_funding_solo", "IAG_funding_solo", "I_funding_solo",
+                          "N_funding_collab", "IAG_funding_collab", "I_funding_collab",
+                          "N_I_IAG_funding_solo", "N_IAG_funding_solo","N_I_funding_solo",
+                          "I_IAG_funding_solo", "N_I_IAG_funding_collab", "N_IAG_funding_collab","N_I_funding_collab",
+                          "I_IAG_funding_collab","No_grant"]
+        """
+        df_add.columns = ["solePubs", "solePubs_full_count","solo_author","collabPubs","collabPubs_full_count",
+                          "N_funding_solo", "N_funding_collab", "N_I_IAG_funding_solo", "N_IAG_funding_solo",
+                          "N_I_funding_solo", "N_I_IAG_funding_collab", "N_IAG_funding_collab","N_I_funding_collab",
+                          "Total_funding"]       
         self.n_publication_add = {key: df_add.copy() for key in self.time_period}        
 
         for paper in tqdm.tqdm(self.data):
             date = self.get_unix(paper)
             if int(date) <= self.last_date and int(date) >= self.start_date:
                 # get list of country for each author 
-                temp_list_country = []
-                if self.scale == "city":
-                    for author in paper["Location_cities"]:
-                        city = paper["Location_cities"][author]["city"]
-                        country = paper["Location_cities"][author]["country"]
-                        if country in ["country","Eswatini","Kosovo","Micronesia"]:
-                            continue
-                        if city and country != None:
-                            loc = self.clean_loc(city + "_" + country)
-                            temp_list_country.append(loc)
-                else:
-                    for author in paper["Location_cities_country"]:
-                        country = paper["Location_cities_country"][author]["country"]
-                        if country in ["country","Eswatini","Kosovo","Micronesia"]:
-                            continue                        
-                        if country != None:
-                            loc = self.clean_loc(country)
-                            temp_list_country.append(loc)
-                
-                for loc in set(temp_list_country):
-                    self.n_publication[date].at[loc, "n_pub"] += 1       
-
-                for loc in set(temp_list_country):
-                    if len(temp_list_country) == 1:
-                        self.n_publication_add[date].at[loc, "solo_author"] += 1 
-                    if len(set(temp_list_country))>1:
-                        self.n_publication_add[date].at[loc, "collabPubs"] += 1  
-                    else:
-                        self.n_publication_add[date].at[loc, "solePubs"] += 1 
-                    
-
-                for loc in temp_list_country:
-                    if len(set(temp_list_country))>1:
-                        self.n_publication_add[date].at[loc, "collabPubs_full_count"] += len([i for i in temp_list_country if i != loc])
-                    else:
-                        self.n_publication_add[date].at[loc, "solePubs_full_count"] += len(temp_list_country)
-
+                temp_list_country = self.pub_info(paper,date)
+                self.grant_info_funder(paper,date,temp_list_country)

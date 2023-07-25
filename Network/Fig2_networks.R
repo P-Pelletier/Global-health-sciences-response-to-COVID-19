@@ -327,7 +327,7 @@ sxd <- scale_x_discrete(breaks=c(months[1],months[7],months[13],months[19],month
                         labels = c("Jan 2019","Juli 2019", "Jan 2020","july 2020", "Jan 2021","july 2021" ))
 
 gcor_res <- data.frame(month=rownames(gcor_res),gcor_res)
-
+months
 
 cor_lineplot <- ggplot(gcor_res, aes(x=month, y=r, group=1)) +
   geom_line() +
@@ -347,8 +347,7 @@ cor_lineplot <- ggplot(gcor_res, aes(x=month, y=r, group=1)) +
         panel.grid.major = element_line(colour = "grey"))
 
 
-
-
+cor_lineplot
 
 ########  assemble picture  ####### 
 

@@ -1,0 +1,69 @@
+SETTINGS
+
+$inputPath
+[1] "/Users/moritz/Documents/Research/CovidScience/RProgs/scientometricsRev/data/"
+
+$outputPath
+[1] "/Users/moritz/Documents/Research/CovidScience/RProgs/scientometricsRev/src/output/"
+
+$logfile
+[1] "link_formation_regression_log.txt"
+
+$verbose
+[1] TRUE
+
+$vars_const
+ [1] "iso_code"              "country"               "region"                "coronaPubsPreCovid"   
+ [5] "nonCoronaPubsPreCovid" "pop"                   "gdp_pc"                "hdi"                  
+ [9] "latitude"              "longitude"            
+
+$vars_t
+ [1] "total_cases"              "total_deaths"             "total_cases_per_million"  "total_deaths_per_million"
+ [5] "Quarantine"               "Ban"                      "Closure"                  "Recommend_home"          
+ [9] "Require_home"             "Lock_home"               
+
+$vars_mult
+[1] "coronaPubsPreCovid"    "nonCoronaPubsPreCovid" "Closure"               "Lock_home"            
+[5] "pop"                  
+
+$vars_sum_absdiff
+[1] "nonCoronaPubsPreCovid" "total_deaths"          "hdi"                   "gdp_pc"               
+
+$vars_log
+[1] "coronaPubsPreCovid.xy"    "nonCoronaPubsPreCovid.xy" "geodist"                 
+
+$t
+[1] 202002 202003 202004 202005 202006
+
+$vars
+$vars$depvar
+[1] "coronaPubs.xy"
+
+$vars$countvars
+ [1] "coronaPubsPreCovid.xy"      "nonCoronaPubsPreCovid.xy"   "coronaPubsPreCovid.mult"   
+ [4] "nonCoronaPubsPreCovid.mult" "total_deaths.sum"           "total_deaths.absdiff"      
+ [7] "Closure.mult"               "Lock_home.mult"             "pop.mult"                  
+[10] "gdp_pc.sum"                 "gdp_pc.absdiff"             "hdi.sum"                   
+[13] "hdi.absdiff"                "geodist"                    "sameRegion"                
+
+$vars$zerovars
+[1] "nonCoronaPubsPreCovid.sum"     "nonCoronaPubsPreCovid.absdiff" "geodist"                      
+[4] "sameRegion"                   
+
+
+$B
+[1] 2
+
+$onesided
+[1] TRUE
+
+$mrqap_outfile
+[1] "link_formation_xqap_extendedtmp.RData"
+
+
+*********************
+
+ToDo: verbose in read_pubmed()ToDo: verbose in read_owid_covid()-                                                                                                               /                                                                                                               -/                                                                                                               number of countries total: 205 
+number of countries removed: 37 
+Aruba,Afghanistan,Aland Islands,Andorra,Bermuda,Cuba,Curacao,Cayman Islands,Eritrea,Faroe Islands,Gibraltar,Guadeloupe,Greenland,French Guiana,Isle of Man,Jersey,Libya,Liechtenstein,Macao,Monaco,Montserrat,Martinique,New Caledonia,Palau,French Polynesia,Reunion,Solomon Islands,San Marino,Somalia,Sint Maarten,Turks and Caicos Islands,Tonga,Tuvalu,Taiwan,Vatican,British Virgin Islands,Samoa 
+number of countries remaining: 168 

@@ -28,9 +28,9 @@ sample <- read_data(path="Data/Data_2022")
 
 ############# get networks ##########
 # get four networks
-gCovid19 <- get_acc_network(sample=sample, covid=TRUE, start=201501, end=201912, soleAuthored=TRUE)
+gCovid19 <- get_acc_network(sample=sample, covid=TRUE, start=201901, end=201912, soleAuthored=TRUE)
 gCovid20 <- get_acc_network(sample=sample, covid=TRUE, start=202001, end=202212, soleAuthored=TRUE)
-g19 <- get_acc_network(sample=sample, covid=FALSE, start=201501, end=201912, soleAuthored=TRUE)
+g19 <- get_acc_network(sample=sample, covid=FALSE, start=201901, end=201912, soleAuthored=TRUE)
 g20 <- get_acc_network(sample=sample, covid=FALSE, start=202001, end=202212, soleAuthored=TRUE)
 
 summary(gCovid19)

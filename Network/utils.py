@@ -164,7 +164,12 @@ class Create_net:
 
         
         self.network = {key: df.copy() for key in self.time_period}
-    
+        self.N_funding = {key: df.copy() for key in self.time_period}
+        self.I_funding = {key: df.copy() for key in self.time_period}
+        self.IAG_funding = {key: df.copy() for key in self.time_period}
+        self.No_grant = {key: df.copy() for key in self.time_period}
+
+             
     def populate_network(self):
         '''
         Parameters
@@ -177,6 +182,16 @@ class Create_net:
         self.start_gen()
         self.init_network()
         for paper in tqdm.tqdm(self.data):
+            if paper["grants"]:
+                if type(paper["grants"]) == dict:
+                    grants = [paper["grants"]]
+                else:
+                    grants = paper["grants"]                
+                countries_funding = []
+                for grant in grants:
+                    countries_funding.append(grant["Country"])
+                countries_funding = [country for country in countries_funding if country != None]
+
             date = self.get_unix(paper)
             if int(date) <= self.last_date and int(date) >= self.start_date:
                 # get list of country for each author 
@@ -205,4 +220,18 @@ class Create_net:
                 #Add a collab in the network at the right date between countries
                 for i in cooc:
                     self.network[date].at[i[0], i[1]] += 1
+                    """
+                    if countries_funding:
+                        if i[0] in countries_funding: 
+                            self.N_funding[date].at[i[0], i[1]] += 1
+                        if i[1] in countries_funding: 
+                            self.N_funding[date].at[i[1], i[0]] += 1
+                        if "International" in countries_funding:
+                            self.IAG_funding[date].at[i[0], i[1]] += 1
+                        if i[0] not in countries_funding and i[1] not in countries_funding and "International" not in countries_funding:
+                            self.I_funding[date].at[i[0], i[1]] += 1     
+                    else:
+                        self.No_grant[date].at[i[0], i[1]] += 1
+                     """           
+                            
 

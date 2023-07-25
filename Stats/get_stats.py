@@ -8,6 +8,7 @@ import pycountry
 import matplotlib.patches as mpatches
 import matplotlib.font_manager as font_manager
 import os
+import pickle
 from matplotlib.lines import Line2D
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -64,7 +65,7 @@ add_others =  instance_others.n_publication_add
 add_info = pd.DataFrame()
 
 for month in tqdm.tqdm(time_period):
-    add_corona[month].columns = ["solePubs", "solePubs_full_count","solo_author","collabPubs","collabPubs_full_count"]   
+    add_corona[month].columns = add_corona[month].columns + "Corona"
     test = pd.concat([add_others[month],add_corona[month]],axis=1)
     test.insert(0, 'month', month)
     add_info = add_info.append(test)
@@ -72,8 +73,11 @@ for month in tqdm.tqdm(time_period):
 add_info['country'] = add_info.index
 add_info.to_csv("Data/Data_{}/country_pub_info.csv".format(str(last_date_year)), index=False)
 
-
-
+"""
+n = 0
+for year in range(201901,201913,1):
+    n += pub_corona[str(year)]["n_pub"]["Somalia"]
+"""
 
 #%% n_pub per month covid vs non-covid
 
@@ -295,6 +299,9 @@ publication.to_csv("Data/Data_{}/fig1a.csv".format(str(last_date_year)), index=F
 
 total_research = pub_data_aggr["corona_pre"]["n_pub"]+ pub_data_aggr["corona_post"]["n_pub"]
 top = list(total_research.sort_values(ascending=False)[0:10].index)
+pickle.dump( top, open( "Data/top_10_publisher.p", "wb" ) )
+
+
 df1 = (pub_data_aggr["corona_pre"]["n_pub"].T[top].T)
 df2 = (pub_data_aggr["corona_post"]["n_pub"].T[top].T)
 df_barplot = pd.concat([df1,df2],axis=1)

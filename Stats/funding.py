@@ -1,21 +1,14 @@
 import tqdm
-import pandas as pd
-import numpy as np
+import pickle
 import pymongo
-from Stats.utils import Create_net
-import tikzplotlib
 import pycountry
-import matplotlib.patches as mpatches
-import matplotlib.font_manager as font_manager
-import os
-from matplotlib.lines import Line2D
-from datetime import datetime
-import datetime as dt 
-import matplotlib.pyplot as plt
-from collections import defaultdict
-import plotly.express as px
-from plotly.offline import plot
 import numpy as np
+import pandas as pd
+import datetime as dt 
+from datetime import datetime
+from collections import Counter
+from collections import defaultdict
+
 
 countries = {}
 for country in pycountry.countries:
@@ -25,10 +18,6 @@ client = pymongo.MongoClient("mongodb://localhost:27017")
 mydb = client["pubmed"]
 collection = mydb["pubmed_cleaned"]
 
-grants_info = defaultdict(dict)
-grants_info_corona = defaultdict(dict)
-docs = collection.find()
-
 def unix2YM(unix):
     date = datetime.utcfromtimestamp(unix)
     month = str(date.month)
@@ -37,40 +26,7 @@ def unix2YM(unix):
         month = "0"+month
     return(year+month)
 
-n_corona_pre_covid = 0
-n_corona_post_covid = 0
-n_pre_covid = 0
-n_post_covid = 0
-n_grants_corona_pre_covid = 0
-n_grants_corona_post_covid = 0
-n_grants_pre_covid = 0
-n_grants_post_covid = 0
 
-for doc in tqdm.tqdm(docs):
-    date = int(unix2YM(doc["unix_received"]))
-    if doc["is_coronavirus_lower"] == 1:
-        if date > 202001:
-            n_corona_post_covid += 1
-            if doc["grants"] != None:
-                n_grants_corona_post_covid += 1
-        else:
-            n_corona_pre_covid += 1
-            if doc["grants"] != None:
-                n_grants_corona_pre_covid += 1
-    else:
-        if date > 202001:
-            n_post_covid += 1
-            if doc["grants"] != None:
-                n_grants_post_covid += 1
-        else:
-            n_pre_covid += 1
-            if doc["grants"] != None:
-                n_grants_pre_covid += 1
-
-n_grants_corona_pre_covid/n_corona_pre_covid
-n_grants_corona_post_covid/n_corona_post_covid
-n_grants_pre_covid/n_pre_covid
-n_grants_post_covid/n_post_covid
 
 #%% TOP 10 country most funding for coronavirus research pre-post. Top 10 country most funding for research pre-post
 
@@ -99,7 +55,7 @@ for doc in tqdm.tqdm(docs):
                 continue
 
 
-countries = sorted(list(set(country for period in grants_country.values() for country in period.keys())))
+
 periods = sorted(list(grants_country.keys()))
 
 # Create an empty DataFrame
@@ -109,11 +65,13 @@ df_corona = pd.DataFrame(columns=countries, index=periods)
 # Populate the DataFrame with the distinct number of grant IDs
 for period, data in grants_country.items():
     for country, grants in data.items():
-        df.loc[period, country] = len(set(grants))
+        if country and country != "International":
+            df.loc[period, country] = len(set(grants))
 
 for period, data in grants_country_corona.items():
     for country, grants in data.items():
-        df_corona.loc[period, country] = len(set(grants))
+        if country and country != "International":
+            df_corona.loc[period, country] = len(set(grants))
 
 sum_before = df.loc[:'202001', :].sum()
 sum_after = df.loc['202002':, :].sum()
@@ -134,78 +92,6 @@ print("Top 10 countries with the biggest sum before 202001:", top_10_countries_b
 print("Top 10 countries with the biggest sum after 202001:", top_10_countries_after)
 
 
-for doc in tqdm.tqdm(docs):
-    date = int(unix2YM(doc["unix_received"]))
-    if doc["grants"]:
-        if type(doc["grants"]) == dict:
-            grants = [doc["grants"]]
-        for grant in grants:
-            try:
-                if doc["is_coronavirus_lower"] == 1:
-                    grants_country_corona[date][grant["Country"]].append(grant["GrantID"])
-                else:
-                    grants_country[date][grant["Country"]].append(grant["GrantID"])
-            except Exception as e:
-                continue
-
-# 33 country funding, 
-
-#%% Number of international funding 
-
-client = pymongo.MongoClient("mongodb://localhost:27017")
-mydb = client["pubmed"]
-collection = mydb["pubmed_cleaned"]
-
-
-
-grants_international_agency = defaultdict(lambda: defaultdict(list))
-grants_international_agency_corona = defaultdict(lambda: defaultdict(list))
-n_grants = defaultdict(list)
-n_grants_corona = defaultdict(list)
-n_paper_inter = defaultdict(int)
-n_paper_inter_corona = defaultdict(int)
-n_paper = defaultdict(int)
-n_paper_corona = defaultdict(int)
-n_inter_collab_solo_funded = defaultdict(int)
-n_inter_collab_solo_corona = defaultdict(int)
-
-docs = collection.find()
-
-
-for doc in tqdm.tqdm(docs):
-    date = int(unix2YM(doc["unix_received"]))
-    if doc["grants"]:
-        if type(doc["grants"]) == dict:
-            grants = [doc["grants"]]
-        for grant in grants:
-            if grant["Country"] == "International":
-                try:
-                    if doc["is_coronavirus_lower"] == 1:
-                        grants_international_agency_corona[date][grant["Agency"]].append(grant["GrantID"])
-                    else:
-                        grants_international_agency[date][grant["Agency"]].append(grant["GrantID"])
-                except Exception as e:
-                    continue
-
-agencies = sorted(list(set(country for period in grants_international_agency.values() for country in period.keys())))
-periods = sorted(list(grants_international_agency.keys()))
-
-
-# Create an empty DataFrame
-df = pd.DataFrame(columns=agencies, index=periods)
-df_corona = pd.DataFrame(columns=agencies, index=periods)
-
-# Populate the DataFrame with the distinct number of grant IDs
-for period, data in grants_international_agency.items():
-    for country, grants in data.items():
-        df.loc[period, country] = len(set(grants))
-
-for period, data in grants_international_agency_corona.items():
-    for country, grants in data.items():
-        df_corona.loc[period, country] = len(set(grants))
-
-df.sum().sum()
-df_corona.sum().sum()        
 
 # 137 international agencies, 19672 distinct grant for overall, 445 for corona
 
@@ -283,68 +169,153 @@ for i in dict_of_insertion:
 
 df_new = pd.DataFrame(list_of_insertion,columns=["time_period","corona","non_corona"])
 
+#%% top_10 funder
+
+docs = collection.find()
+
+top_10_grants = defaultdict(int)
+
+for doc in tqdm.tqdm(docs):
+    if doc["is_coronavirus_lower"] == 1:      
+        if doc["grants"]:
+            if type(doc["grants"]) == dict:
+                grants = [doc["grants"]]
+            else:
+                grants = doc["grants"]
+            for grant in grants:
+                if grant["Country"] != None and grant["Country"] != "International":
+                    if grant["Country"] == "Korea":
+                        top_10_grants["Republic of Korea"] += 1
+                    else:
+                        top_10_grants[grant["Country"]] += 1
+
+top_10_grants = sorted(top_10_grants, key=top_10_grants.get, reverse=True)[:10]
+
 #%% Sanki somehow 
 
-focal_tp = [i for i in time_period if int(i)>=201901 and int(i)<= 202212]
+grants_corona_pre_covid = []
+pre_covid_period = [i for i in time_period if int(i)>=201901 and int(i)<= 201912]
+post_covid_period = [i for i in time_period if int(i)>=202001 and int(i)<= 202212]
+for grant in tqdm.tqdm(grants_info_corona):
+    if set(pre_covid_period).intersection(set(list(grants_info_corona[grant]))):
+        grants_corona_pre_covid.append(grant)
 
-df_common_grants = pd.DataFrame(index=focal_tp, columns=common_grants)
-df_common_grants_corona = pd.DataFrame(index=focal_tp, columns=common_grants) 
 
-for grant in tqdm.tqdm(common_grants):
-    df_common_grants[grant] = df_common_grants.index.map(grants_info[grant]).fillna(0)   
-    df_common_grants_corona[grant] = df_common_grants.index.map(grants_info_corona[grant]).fillna(0)      
+grant_only_global_pre_covid = []
+for grant in tqdm.tqdm(grants_info):
+    if set(pre_covid_period).intersection(set(list(grants_info[grant]))):
+        if grant not in grants_corona_pre_covid:
+           grant_only_global_pre_covid.append(grant)
 
-period2grant = {}
-for grant, time_periods in tqdm.tqdm(grants_info.items()):
-    for time_period, count in time_periods.items():
-        if time_period not in period2grant:
-            period2grant[time_period] = []
-        period2grant[time_period].extend([grant] * count)
 
-period2grant_corona = {}
-for grant, time_periods in tqdm.tqdm(grants_info_corona.items()):
-    for time_period, count in time_periods.items():
-        if time_period not in period2grant_corona:
-            period2grant_corona[time_period] = []
-        period2grant_corona[time_period].extend([grant] * count)
+df = pd.DataFrame(np.zeros((len(top_10_grants), 3)))
+df.index = top_10_grants 
+df.columns = ["global_n_pre","global_n_post","corona_n_post"]      
 
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
+sanki_left = {i:[] for i in top_10_grants}
 
-# Convert time period strings to datetime objects
-start_date = datetime.strptime('200001', '%Y%m')
-end_date = datetime.strptime('202212', '%Y%m')
+for period in tqdm.tqdm(pre_covid_period):
+    for country in tqdm.tqdm(top_10_grants):
+        grants = grants_country[int(period)][country]
+        sanki_left[country] += [i for i in grants if i in grant_only_global_pre_covid]
 
-# Initialize the share dictionary
-share_of_common_grants = {}
-
-current_date = start_date
-
-while current_date <= end_date:
-    current_period = current_date.strftime('%Y%m')
-
-    appeared_grants = set()
+for country in sanki_left:
+    df.at[country,"global_n_pre"] += len(list(set(sanki_left[country])))
     
 
-    for period, grants in period2grant.items():
-        if datetime.strptime(period, '%Y%m') <= current_date:
-            appeared_grants.update(grants)
-            
-    if int(current_period) >= 201901:
-        unique_grants = []
-        not_unique_grants = []
-        for grant in period2grant_corona[current_period]:
-            if grant not in appeared_grants:
-                unique_grants.append(grant)
-            else:
-                not_unique_grants.append(grant)
-            
-        share_of_common_grants[current_period] = len(not_unique_grants) / (len(not_unique_grants) + len(unique_grants))
+sanki_right_1 = {i:[] for i in top_10_grants}
 
-    current_date += relativedelta(months=1)
+for period in tqdm.tqdm(post_covid_period):
+    for country in tqdm.tqdm(top_10_grants):
+        grants = grants_country[int(period)][country]
+        sanki_right_1[country] += [i for i in grants if i in grant_only_global_pre_covid]
+        
+sanki_right_2 = {i:[] for i in top_10_grants}
 
-df_common = pd.DataFrame.from_dict(share_of_common_grants, orient='index', columns=['Value'])
+for period in tqdm.tqdm(post_covid_period):
+    for country in tqdm.tqdm(top_10_grants):
+        grants = grants_country_corona[int(period)][country]
+        sanki_right_2[country] += [i for i in grants if i in grant_only_global_pre_covid]
+
+sanki_final = {i:{"n_global":0,"n_corona":0} for i in top_10_grants}
+for country in tqdm.tqdm(top_10_grants):
+    frequency_count_global = Counter(sanki_right_1[country])
+    frequency_count_corona = Counter(sanki_right_2[country])
+    for grant in tqdm.tqdm(frequency_count_corona):
+        if frequency_count_corona[grant] >= 1:
+            sanki_final[country]["n_corona"] += 1 
+        else:
+            sanki_final[country]["n_global"] += 1 
+    for key in frequency_count_global.keys():
+        if key not in frequency_count_corona:
+            sanki_final[country]["n_global"] += 1 
+    
 df_common.to_csv("Data/fig_funding_d.csv")
+
+#%% Share of new grant for corona
+
+grant_global = {i:[] for i in  time_period if int(i)>=201801 and int(i)<= 202212}
+
+for grant in tqdm.tqdm(grants_info):
+    for month in grants_info[grant]:
+        if int(month) >= 201801 and int(month) <= 202212:
+            grant_global[month].append(grant)
+
+
+t = 0
+for period in tqdm.tqdm(grant_global):
+    if t == 0:
+        grant_global[period] = list(set(grant_global[period]))
+        period_temp = period
+        t +=1 
+        continue
+    else:
+        grant_global[period] = list(set(grant_global[period] + grant_global[period_temp]))
+        period_temp = period
+
+
+grant_corona = {i:[] for i in  time_period if int(i)>=201801 and int(i)<= 202212}
+
+for grant in tqdm.tqdm(grants_info_corona):
+    for month in grants_info_corona[grant]:
+        if int(month) >= 201801 and int(month) <= 202212:
+            grant_corona[month].append(grant)
+
+t = 0
+for period in tqdm.tqdm(grant_corona):
+    if t == 0:
+        grant_corona[period] = list(set(grant_corona[period]))
+        period_temp = period
+        t +=1 
+        continue
+    else:
+        grant_corona[period] = list(set(grant_corona[period] + grant_corona[period_temp]))
+        period_temp = period
+
+share_dict = {}
+new_grant_dict = {}
+new_grant_corona_dict = {}
+
+for period in tqdm.tqdm(grant_corona):
+    common_grant = len(set(grant_corona[period]).intersection(set(list(grant_global[period]))))
+    new_grant = len(grant_corona[period]) - common_grant
+    share = common_grant/(common_grant+new_grant)
+    share_dict[period] = share
+    new_grant_dict[period] = len(grant_global[period])
+    new_grant_corona_dict[period] = len(grant_corona[period])
+
+periods = [i for i in time_period if int(i)>=201801 and int(i) <= 202212]                
+periods_dt = [dt.datetime.strptime(str(i), '%Y%m') for i in time_period if int(i)>=201801 and int(i) <= 202212]
+periods.sort()
+periods_dt.sort()
+
+df = pd.DataFrame(index=periods)
+df["share_common_grants"] = df.index.map(share_dict)
+df["new_grant_dict"] = df.index.map(new_grant_dict)
+df["new_grant_corona_dict"] = df.index.map(new_grant_corona_dict)
+df["date"] = df.index
+
+df.to_csv("Data/fig_funding_d.csv",index=False)
 
 #%% Plot dfs
 
@@ -420,7 +391,7 @@ df = pd.DataFrame(index=periods)
 df_corona = pd.DataFrame(index=periods)
 
 n_grants = {i:np.mean(n_grants[i]) for i in n_grants}
-n_grants_corona = {i:np.mean(n_grants[i]) for i in n_grants}
+n_grants_corona = {i:np.mean(n_grants_corona[i]) for i in n_grants}
 
 df["mean_grants"] = pd.Series(n_grants)   
 df["n_papers"] = pd.Series(n_paper)
@@ -443,14 +414,7 @@ df_corona.index = periods
 df_corona["type"] = "corona"
 
 
-df_common_grants.index = periods
-df_common_grants_corona.index = periods
-df["common_grants"] = df_common_grants.sum(axis=1)
-df_corona["common_grants"] = df_common_grants_corona.sum(axis=1)
 
-
-df["common_grants"]/df["n_papers"]
-df_corona["common_grants"]/df_corona["n_papers"]
 
 df_final = pd.concat([df, df_corona], axis=0)
 df_final["date"] = df_final.index
