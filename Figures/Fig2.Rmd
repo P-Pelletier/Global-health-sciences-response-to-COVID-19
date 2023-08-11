@@ -1,0 +1,343 @@
+---
+title: 'Fig1'
+author: "Kevin Wirtz (kevin.wirtz@unistra.fr)"
+date: "Updated `r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_notebook:
+    code_folding: hide
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+
+rm(list = ls(all.names = TRUE)) #will clear all objects includes hidden objects.
+gc() #free up memrory and report the memory usage.
+graphics.off()
+
+Sys.setenv(LANG = "en") # For english language
+Sys.setlocale("LC_TIME", "English")
+options(scipen = 5) # To deactivate annoying scientific number notation
+library(zoo)
+library(magrittr) # For extra-piping operators (eg. %<>%)
+library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
+library(cowplot)
+library(ggpubr)
+library(magick)
+library(lubridate)
+```
+
+# Fig1: #### International
+```{r} 
+
+df <- read_csv("../Data/fig_funding.csv")
+df$date <- parse_date_time(as.character(df$date), orders = "ym")   # Convert to date
+df$date <- format(df$date, format = "%b %Y")  
+df[is.na(df)] <- 0
+months = unique(df$date)
+
+df_corona<- subset(df, type == "corona")
+df_corona %<>% mutate(mean_grants_roll = rollmean(mean_grants, k = 1, fill = NA, align = "right"))
+df_corona %<>% mutate(n_papers_inter_funding_roll = rollmean(n_papers_inter_funding, k = 1, fill = NA, align = "right"))
+names(df_corona) <- paste0(names(df_corona), "_corona")
+
+
+df_non_corona<- subset(df, type == "non-corona")
+df_non_corona %<>% mutate(mean_grants_roll = rollmean(mean_grants, k = 1, fill = NA, align = "right"))
+df_non_corona %<>% mutate(n_papers_inter_funding_roll = rollmean(n_papers_inter_funding, k = 1, fill = NA, align = "right"))
+
+
+collapsed_df <- cbind(df_corona, df_non_corona)
+collapsed_df$months_number = c(1:length(months))
+
+names(collapsed_df)[1] <- "month"
+collapsed_df$month <- as.character(collapsed_df$month)
+month <- collapsed_df$month
+
+
+oma2 <- c(0.3,0,0,0.3)
+
+custom_theme = theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title.x = element_text(size = 12),
+      axis.title.y = element_text(size = 12),
+      panel.border = element_rect(colour = "black", fill=NA, size=1),
+      plot.margin = unit(oma2, "cm"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      legend.key=element_blank(),
+      legend.title=element_blank(),
+      legend.position="top",
+      legend.text=element_text(size = 12)) 
+
+
+```
+
+```{r} 
+sxd <- scale_x_discrete(breaks=c(month[1],month[7],month[13],month[19],month[25],month[31],month[37],month[43]),##,month[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021","Jan 2022","July 2022"))##, "May 2021" )) 
+
+
+```
+
+```{r} 
+
+
+figa = ggplot(collapsed_df, aes(x = month)) + 
+  geom_line(size=1,aes(y = n_paper_with_grant, color='n_papers_with_grants',group=1)) + 
+  geom_line(size=1,aes(y = n_paper_with_grant_corona, color='n_papers_with_grants_corona',group=1)) +
+  scale_color_manual(name = "Type",
+                     values = c( "n_papers_with_grants" = "black", "n_papers_with_grants_corona" = "#1f77b4"),
+                     labels = c( "Non-CRR","CRR")) +
+  labs(x = "Year",
+         y = "Share of paper with atleast 1 grant",
+         color = "Legend") +
+  sxd +
+  custom_theme
+#  scale_y_continuous(
+#    name = "Share transition",
+#    sec.axis = sec_axis(~./3, name="Share Ind.")
+#  )
+
+figa
+
+
+pdf(file="../Results/plots/Fig_funding_a.pdf", width=8, height=5, family="Helvetica", pointsize=6)
+figa
+dev.off()
+
+
+```
+
+```{r} 
+
+
+
+figb = ggplot(collapsed_df, aes(x = month)) + 
+  geom_line(size=1,aes(y = mean_grants_roll, color='mean_grants',group=1)) + 
+  geom_line(size=1,aes(y = mean_grants_roll_corona, color='mean_grants_corona',group=1)) +
+  scale_color_manual(name = "Type",
+                     values = c( "mean_grants" = "black", "mean_grants_corona" = "#1f77b4"),
+                     labels = c( "Non-CRR","CRR")) +
+  labs(x = "Year",
+         y = "Mean of number of grants per paper",
+         color = "Legend") +
+  sxd +
+  custom_theme
+#  scale_y_continuous(
+#    name = "Share transition",
+#    sec.axis = sec_axis(~./3, name="Share Ind.")
+#  )
+
+figb
+
+
+pdf(file="../Results/plots/Fig_funding_b.pdf", width=8, height=5, family="Helvetica", pointsize=6)
+figb
+dev.off()
+
+```
+
+
+```{r} 
+
+
+
+figc = ggplot(collapsed_df, aes(x = month)) + 
+  geom_line(size=1,aes(y = n_papers_inter_funding_roll/n_papers, color='mean_grants',group=1)) + 
+  geom_line(size=1,aes(y = n_papers_inter_funding_roll_corona/n_papers_corona, color='mean_grants_corona',group=1)) +
+  scale_color_manual(name = "Type",
+                     values = c( "mean_grants" = "black", "mean_grants_corona" = "#1f77b4"),
+                     labels = c( "Non-CRR","CRR")) +
+  labs(x = "Year",
+         y = "Share of paper with atleast 1 international grant",
+         color = "Legend") +
+  sxd +
+  custom_theme
+#  scale_y_continuous(
+#    name = "Share transition",
+#    sec.axis = sec_axis(~./3, name="Share Ind.")
+#  )
+
+figc
+
+
+pdf(file="../Results/plots/Fig_funding_c.pdf", width=8, height=5, family="Helvetica", pointsize=6)
+figc
+dev.off()
+
+```
+
+```{r} 
+df_d <- read_csv("../Data/fig_funding_d.csv")
+df_d$month <- as.character(df_d$date)
+df_d <- df_d %>%
+  mutate(growth_global = (new_grant_dict - lag(new_grant_dict)) / lag(new_grant_dict) ,
+         growth_corona = (new_grant_corona_dict - lag(new_grant_corona_dict)) / lag(new_grant_corona_dict) ) %>%
+  filter(month >= 201901)
+```
+
+```{r} 
+
+
+
+figd = ggplot(df_d, aes(x = month)) + 
+  geom_line(size=1,aes(y = growth_global, color='growth_global',group=1)) +
+  geom_line(size=1,aes(y = growth_corona, color='growth_corona',group=1)) +
+  geom_line(size=1,aes(y = share_common_grants, color='share_common_grants',group=1)) + 
+  scale_color_manual(name = "Type",
+                     values = c( "growth_global" = "black", "growth_corona" = "#1f77b4","share_common_grants"="orange"),
+                     labels = c( "CRR","Non-CRR","Share common grant")) +
+  labs(x = "Year",
+         y = "Share of paper with atleast 1 international grant",
+         color = "Legend") +
+  sxd +
+  custom_theme
+#  scale_y_continuous(
+#    name = "Share transition",
+#    sec.axis = sec_axis(~./3, name="Share Ind.")
+#  )
+
+figd
+
+
+pdf(file="../Results/plots/Fig_funding_d.pdf", width=8, height=5, family="Helvetica", pointsize=6)
+figd
+dev.off()
+
+```
+
+# Fig_new a: #### International
+```{r} 
+
+df <- read_csv("../Data/fig_funding_new.csv")
+df$date <- parse_date_time(as.character(df$month), orders = "ym")   # Convert to date
+df$date <- format(df$date, format = "%b %Y")  
+df[is.na(df)] <- 0
+df$month <- as.numeric(df$month)
+df %<>% mutate(share_common_grant_roll = rollmean(share_common_grant, k = 1, fill = NA, align = "right"))
+df<- subset(df, month >= 201901)
+months = unique(df$date)
+df$months_number = c(1:length(months))
+
+
+df$month <- as.character(df$month)
+month <- df$month
+
+
+
+oma2 <- c(0.3,0,0,0.3)
+
+custom_theme = theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title.x = element_text(size = 12),
+      axis.title.y = element_text(size = 12),
+      panel.border = element_rect(colour = "black", fill=NA, size=1),
+      plot.margin = unit(oma2, "cm"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      legend.key=element_blank(),
+      legend.title=element_blank(),
+      legend.position="top",
+      legend.text=element_text(size = 12)) 
+
+
+```
+
+```{r} 
+sxd <- scale_x_discrete(breaks=c(month[1],month[7],month[13],month[19],month[25],month[31],month[37],month[43]),##,month[29]), 
+                        labels = c("Jan 2019","July 2019", "Jan 2020","July 2020","Jan 2021", "July 2021","Jan 2022","July 2022"))##, "May 2021" )) 
+
+
+```
+
+```{r} 
+
+max_value = max(log(df$n_project))*1.5
+
+figa = ggplot(df, aes(x = month)) + 
+  geom_line(size=1,aes(y = log(n_project), color='n_project',group=1)) + 
+  geom_line(size=1,aes(y = log(n_project_corona), color='n_project_corona',group=1)) +
+  geom_line(size=1,aes(y = share_common_grant_roll*max_value, color='share_common_grant',group=1)) +
+  scale_color_manual(name = "Type",
+                     values = c( "n_project" = "black", "n_project_corona" = "#1f77b4","share_common_grant"="orange"),
+                     labels = c( "Non-CRR","CRR","Share of common CRR and Non-CRR project")) +
+  labs(x = "Month",
+         y = "Log number of project",
+         color = "Legend") +
+  sxd +
+  scale_y_continuous(
+    name = "Log number of project",
+    sec.axis = sec_axis(~./max_value, name="Share common project")
+  ) +
+  custom_theme
+#  scale_y_continuous(
+#    name = "Share transition",
+#    sec.axis = sec_axis(~./3, name="Share Ind.")
+#  )
+
+figa
+
+
+pdf(file="../Results/plots/Fig_funding_a.pdf", width=8, height=5, family="Helvetica", pointsize=6)
+figa
+dev.off()
+
+
+
+```
+
+
+
+
+```{r} 
+
+
+figb = ggplot(df, aes(x = month)) + 
+  geom_line(size=1,aes(y = new_corona_project_from_global, color='new_corona_project_from_global',group=1)) +
+  geom_line(size=1,aes(y = new_corona_project, color='new_corona_project',group=1)) + 
+  #geom_line(size=1,aes(y = new_global_project, color='new_global_project',group=1)) + 
+  #geom_line(size=1,aes(y = new_global_project_future_use_covid, color='new_global_project_future_feeding',group=1)) + 
+  scale_color_manual(name = "Type",
+                     values = c( "new_corona_project_from_global" = "black", "new_corona_project" = "#1f77b4"),
+                                  #"new_global_project_future_feeding" = "orange"),
+                     labels = c( "New CRR project","New CRR project from Non-CRR")) +
+  labs(x = "Year",
+         y = "Number of project",
+         color = "Legend") +
+  sxd +
+  custom_theme
+#  scale_y_continuous(
+#    name = "Share transition",
+#    sec.axis = sec_axis(~./3, name="Share Ind.")
+#  )
+
+figb
+
+
+pdf(file="../Results/plots/Fig_funding_b.pdf", width=8, height=5, family="Helvetica", pointsize=6)
+figb
+dev.off()
+
+
+```
+
+```{r} 
+fig_funding = ggdraw() +
+  draw_plot(figa, x=0, y=0, width=0.5, height=1)+
+  draw_plot(figb, x=0.5, y=0, width=0.50, height=1)+
+  draw_plot_label(label=c("A","B"),x=c(0.01, 0.5),y=c(0.98, 0.98), 
+                  size = 10)
+fig_funding
+
+pdf(file="../Results/plots/Fig2.pdf", width=12, height=5, family="Helvetica", pointsize=6)
+fig_funding
+dev.off()
+
+```

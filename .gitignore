@@ -5,3 +5,4 @@ Data/pubmed_2019_cleaned_pre/pubmed_2019_cleaned.json
 *.json
 *.RData
 *.RData
+Data/data_covid_paper.zip
