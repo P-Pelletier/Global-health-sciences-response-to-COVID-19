@@ -26,6 +26,7 @@ library(tidyr)
 library(sna)
 library(igraph)
 library(pscl) # zero-inflated models
+library(xtable)
 library(stargazer)
 library(lubridate)
 library(parallel)
@@ -614,7 +615,7 @@ View(res_mat)
 #### todo 
 
 cat("************* output table **************\n\n\n")
-library(xtable)
+
 print(xtable(res_mat[,1:12]))
 print(xtable(res_mat[,13:24]))
 print(xtable(res_mat[,25:36]))
@@ -623,15 +624,51 @@ print(xtable(res_mat[,25:36]))
 
 
 
+#### marEffect
+
+onepercent_increase_log <- function(data,var){
+  
+  oldvals <- data[,var]
+  vals <- exp(oldvals)-1  
+  vals <- ifelse(vals>0,vals*1.01,1)  
+  data[,var] <- log(vals+1)
+  return(data)
+}
 
 
+margEff <- matrix(NA,nrow=length(models[5][[1]]$coefficients$count[-1]),ncol=length(SETTINGS$t))
+rownames(margEff) <- names(models[5][[1]]$coefficients$count[-1])
+colnames(margEff) <- SETTINGS$t
 
+i = 1 
+for(month in SETTINGS$t){
+  #month <- "202002"
+  # extract est
+  est <- models[i][[1]]
+  
+  for(var in names(est$coefficients$count[-1])){
+    #var <- names(est$model)[-1][13]
+    if(var=="sameRegion"){
+      data <- est$model
+      data[,"sameRegion"] <- 0
+      c_hat1 <- predict(est,data)
+      data[,"sameRegion"] <- 1
+      c_hat2 <- predict(est,data)
+    }else{
+      c_hat1 <- predict(est,est$model)
+      data <- onepercent_increase_log(data=est$model,var=var)
+      c_hat2 <- predict(est,data)
+    }
+    me <- mean(c_hat2/c_hat1)
+    margEff[var,i] <- me
+  }
+  i = i + 1
+}
 
-
-
-
-
-
+View(margEff)
+print(xtable(margEff[,1:12]))
+print(xtable(margEff[,13:24]))
+print(xtable(margEff[,25:36]))
 
 
 

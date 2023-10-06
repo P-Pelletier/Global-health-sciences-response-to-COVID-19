@@ -215,7 +215,7 @@ dev.off()
 # Fig_new a: #### International
 ```{r} 
 
-df <- read_csv("../Data/fig_funding_new.csv")
+df <- read_csv("../Data/fig_funding_new2.csv")
 df$date <- parse_date_time(as.character(df$month), orders = "ym")   # Convert to date
 df$date <- format(df$date, format = "%b %Y")  
 df[is.na(df)] <- 0

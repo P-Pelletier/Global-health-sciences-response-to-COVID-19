@@ -259,8 +259,10 @@ df_common.to_csv("Data/fig_funding_d.csv")
 
 grants_info = defaultdict(dict)
 grants_info_corona = defaultdict(dict)
-
 docs = collection.find()
+
+country_ignore = ["United States","UNITED STATES","U.S.A.","United States of America"]
+list_country = set()
 
 time_period = []
 for doc in tqdm.tqdm(docs):
@@ -274,18 +276,21 @@ for doc in tqdm.tqdm(docs):
             time_period.append(date)
             for grant in grants:
                 if isinstance(grant,dict):
-                    if "GrantID" in grant:
-                        try:
-                            if doc["is_coronavirus_lower"] == 1:                    
-                                grants_info_corona[grant["GrantID"]][date] += 1
-                            else:
-                                grants_info[grant["GrantID"]][date] += 1
-                        except:
-                            if doc["is_coronavirus_lower"] == 1:                    
-                                grants_info_corona[grant["GrantID"]][date] = 1
-                            else:
-                                grants_info[grant["GrantID"]][date] = 1
-                  
+                    if grant["Country"] not in country_ignore:
+                        list_country.add(grant["Country"])
+
+                        if "GrantID" in grant:
+                            try:
+                                if doc["is_coronavirus_lower"] == 1:                    
+                                    grants_info_corona[grant["GrantID"]][date] += 1
+                                else:
+                                    grants_info[grant["GrantID"]][date] += 1
+                            except:
+                                if doc["is_coronavirus_lower"] == 1:                    
+                                    grants_info_corona[grant["GrantID"]][date] = 1
+                                else:
+                                    grants_info[grant["GrantID"]][date] = 1
+                      
 grants_info = {i:grants_info[i] for i in grants_info if grants_info[i] != {}}
 grants_info_corona = {i:grants_info_corona[i] for i in grants_info_corona if grants_info_corona[i] != {}}
 time_period = list(set([i for i in list(set(time_period)) if int(i)>=201701 and int(i)<=202212]))
@@ -358,7 +363,6 @@ df.to_csv("Data/fig_funding_d.csv",index=False)
 client = pymongo.MongoClient("mongodb://localhost:27017")
 mydb = client["pubmed"]
 collection = mydb["pubmed_cleaned"]
-
 
 
 grants_international_agency = defaultdict(lambda: defaultdict(list))

@@ -37,7 +37,7 @@ library(countrycode)
 library(readxl)
 library(mctest)
 library(lubridate)
-#library(sandwich) # for heteroskedasticity-robust standard errors
+library(sandwich) # for heteroskedasticity-robust standard errors
 
 # data input
 inputPath = "G:/Github/Global-health-sciences-response-to-COVID-19/data/"
@@ -209,13 +209,13 @@ for(i in 1:length(months[0:36])){
     models[[i]] <- lm(coronaPubsCum ~ nonCoronaPubsPreCovid + coronaPubsPreCovid +
                         dep_internationalPreCovid_normalized  +
                         cum_deaths  + border + locked + 
-                        gdp_pc# + hdi
+                        gdp_pc + hdi
                       ,data=covidPanel[idx,])
     cov[[i]] = sqrt(diag(sandwich::vcovCL(models[[i]], cluster = covidPanel[idx,]$region))) 
   }else{ # no/too few closures/lockdown
     models[[i]] <- lm(coronaPubsCum ~ nonCoronaPubsPreCovid + coronaPubsPreCovid +
                         dep_internationalPreCovid_normalized  +
-                        gdp_pc #+ hdi
+                        gdp_pc + hdi
                       ,data=covidPanel[idx,])
     cov[[i]] = sqrt(diag(sandwich::vcovCL(models[[i]], cluster = covidPanel[idx,]$region))) 
   }
@@ -250,7 +250,7 @@ stargazer::stargazer(
   se = cov, 
   align = TRUE, type = "text",  omit = c('Constant'), font.size = "small",
   dep.var.labels.include = FALSE, dep.var.caption = "",column.labels = months_clean[13:24],
-  title = "", covariate.labels = var_labels, omit.stat = omit_stats,
+  title = "", omit.stat = omit_stats,
   out = paste0(outputPath,"/national_output_mid.tex")
 )
 
@@ -259,7 +259,7 @@ stargazer::stargazer(
   se = cov, 
   align = TRUE, type = "text",  omit = c('Constant'), font.size = "small",
   dep.var.labels.include = FALSE, dep.var.caption = "",column.labels = months_clean[25:36],
-  title = "", covariate.labels = var_labels, omit.stat = omit_stats,
+  title = "", omit.stat = omit_stats,
   out = paste0(outputPath,"/national_output_end.tex")
 )
 

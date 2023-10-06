@@ -12,7 +12,7 @@ for country in pycountry.countries:
 
 #%% df
 
-client = pymongo.MongoClient('mongodb://Pierre:ilovebeta67@localhost:27017/')
+client = pymongo.MongoClient("mongodb://localhost:27017")
 mydb = client["pubmed"]
 collection = mydb["pubmed_cleaned"]
 
