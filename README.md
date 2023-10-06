@@ -4,8 +4,7 @@ This folder hosts the code, data and results for the paper "Global health scienc
 
 ## Data
 
-For simplicity of use you can find data_covid_paper.rar at https://zenodo.org/record/5011448#.Ykb2PDU68mA which contains the cleaned data used for the analysis. However we do not own the data and The following 6 data sources have been used.
-
+For simplicity of use you can find data_covid_paper.rar at https://zenodo.org/record/8238355 which contains the cleaned data used for the analysis. However we do not own the data and The following 6 data sources have been used.
 
 1. Publication data
 
